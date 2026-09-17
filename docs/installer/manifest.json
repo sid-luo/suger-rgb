@@ -1,0 +1,17 @@
+{
+  "name": "Suger RGB",
+  "version": "1.0.0",
+  "new_install_prompt_erase": false,
+  "new_install_improv_wait_time": 0,
+  "builds": [
+    {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+        {
+          "path": "firmware/suger-rgb-esp32c3.bin",
+          "offset": 0
+        }
+      ]
+    }
+  ]
+}

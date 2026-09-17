@@ -1,0 +1,1 @@
+3249e7021adb71a3d1734e5a2f5d320331ef67b2d7fc8df81ba3bb70dccac9b7  suger-rgb-esp32c3.bin

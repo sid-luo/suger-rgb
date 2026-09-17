@@ -1,0 +1,11 @@
+/installer/
+  Cache-Control: no-cache
+
+/installer/index.html
+  Cache-Control: no-cache
+
+/installer/manifest.json
+  Cache-Control: no-cache
+
+/installer/firmware/*
+  Cache-Control: no-cache

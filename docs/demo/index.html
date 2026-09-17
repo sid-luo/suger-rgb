@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="theme-color" content="#080a0e">
+    <meta name="description" content="Interactive Suger RGB glucose color and trend-effect demo.">
+    <link rel="icon" href="../installer/assets/suger-rgb-logo.svg" type="image/svg+xml">
+    <title>Suger RGB · 灯效演示</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        --page: #080a0e;
+        --panel: #10141b;
+        --panel-soft: #0c1016;
+        --line: #252c36;
+        --text: #f5f7fb;
+        --muted: #98a2b1;
+        --accent: #00ff00;
+        background: var(--page);
+        color: var(--text);
+      }
+
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; background: radial-gradient(circle at 50% 8%, #151a22 0, var(--page) 38%); }
+      button, input { font: inherit; }
+      button { color: inherit; }
+      a { color: inherit; }
+
+      .page {
+        width: min(100% - 32px, 1040px);
+        margin: 0 auto;
+        padding: 24px 0 48px;
+      }
+
+      .topbar { display: flex; align-items: center; justify-content: flex-end; min-height: 42px; gap: 18px; }
+      .brand { display: flex; justify-content: center; padding: 34px 0 8px; }
+      .logo { display: block; width: 420px; max-width: 58%; height: auto; border-radius: 12px; }
+      .top-actions { display: flex; align-items: center; gap: 10px; }
+      .top-link, .language {
+        min-height: 40px;
+        padding: 0 14px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #394352;
+        border-radius: 999px;
+        color: #dce2eb;
+        background: #151a22;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .top-link:hover, .language:hover { border-color: #687587; background: #1a2029; }
+
+      .hero { padding: 8px 0 30px; text-align: center; }
+      .eyebrow { margin: 0 0 10px; color: #929dac; font-size: 13px; letter-spacing: .09em; text-transform: uppercase; }
+      h1 { max-width: 940px; margin: 0; font-size: clamp(34px, 6.5vw, 62px); line-height: 1.04; letter-spacing: -.045em; }
+      .lead { max-width: 720px; margin: 0 auto; color: #aeb7c5; font-size: 17px; line-height: 1.7; }
+
+      .simulator {
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: var(--panel);
+        box-shadow: 0 28px 90px #00000052;
+      }
+
+      .simulator-head {
+        display: grid;
+        grid-template-columns: minmax(220px, .78fr) minmax(0, 1.7fr);
+        min-height: 420px;
+      }
+
+      .readout {
+        position: relative;
+        z-index: 2;
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid var(--line);
+        background: linear-gradient(155deg, #161b23 0%, #0c1016 82%);
+      }
+      .readout::before {
+        content: "";
+        position: absolute;
+        inset: auto auto 10% -20%;
+        width: 210px;
+        height: 210px;
+        border-radius: 50%;
+        background: var(--accent);
+        filter: blur(90px);
+        opacity: .1;
+        pointer-events: none;
+      }
+      .status-kicker { color: #7f8998; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+      .reading-row { display: flex; align-items: flex-end; gap: 12px; margin-top: 19px; }
+      .reading-value { font-size: clamp(62px, 9vw, 92px); line-height: .86; font-weight: 800; letter-spacing: -.07em; }
+      .reading-unit { padding-bottom: 7px; color: #929cab; font-size: 14px; }
+      .secondary-reading { margin-top: 13px; color: #c3cbd6; font-size: 15px; }
+      .effect-title { display: flex; align-items: center; gap: 9px; margin-top: auto; font-size: 18px; font-weight: 750; }
+      .color-dot { width: 11px; height: 11px; flex: 0 0 auto; border-radius: 50%; background: var(--accent); box-shadow: 0 0 15px var(--accent); }
+      .trend-symbol { margin-top: 16px; color: #f6f8fb; font-size: 38px; line-height: 1; }
+      .effect-description { min-height: 48px; margin: 14px 0 0; color: #8994a3; font-size: 13px; line-height: 1.65; }
+
+      .stage-wrap { position: relative; min-width: 0; padding: 22px; background: #090c11; }
+      .stage-toolbar { position: relative; z-index: 3; display: flex; justify-content: flex-end; gap: 6px; }
+      .layout-button {
+        min-height: 34px;
+        padding: 0 12px;
+        border: 1px solid #2c3440;
+        border-radius: 9px;
+        color: #8691a1;
+        background: #10151c;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .layout-button[aria-pressed="true"] { color: #f5f7fb; border-color: #5c6878; background: #1b222c; }
+      .stage {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        isolation: isolate;
+        background:
+          radial-gradient(circle at 50% 52%, color-mix(in srgb, var(--accent) 6%, transparent), transparent 34%),
+          linear-gradient(#ffffff06 1px, transparent 1px),
+          linear-gradient(90deg, #ffffff06 1px, transparent 1px);
+        background-size: auto, 28px 28px, 28px 28px;
+        background-position: center;
+      }
+      .stage::after {
+        content: "VIRTUAL WS2812B · 24 LED";
+        position: absolute;
+        left: 22px;
+        bottom: 18px;
+        color: #596473;
+        font-size: 10px;
+        letter-spacing: .12em;
+      }
+      .led {
+        --size: 20px;
+        position: absolute;
+        z-index: 2;
+        width: var(--size);
+        height: var(--size);
+        border: 1px solid #ffffff24;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        background: #11151a;
+        box-shadow: 0 0 0 2px #05070a, inset 0 1px 2px #ffffff2b;
+        transition: left .38s cubic-bezier(.2,.8,.2,1), top .38s cubic-bezier(.2,.8,.2,1), width .25s ease, height .25s ease;
+        will-change: left, top, background, box-shadow;
+      }
+      .led::after {
+        content: "";
+        position: absolute;
+        width: 34%;
+        height: 34%;
+        left: 22%;
+        top: 18%;
+        border-radius: 50%;
+        background: #ffffff9e;
+        filter: blur(.4px);
+        opacity: .42;
+      }
+
+      .controls { display: grid; grid-template-columns: 1.1fr .9fr; gap: 0; border-top: 1px solid var(--line); }
+      .control-column { padding: 27px 30px 30px; }
+      .control-column + .control-column { border-left: 1px solid var(--line); }
+      .control-group + .control-group { margin-top: 25px; }
+      .group-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
+      .group-label { color: #d8dee7; font-size: 14px; font-weight: 720; }
+      .group-hint { color: #697483; font-size: 11px; }
+
+      .glucose-slider { width: 100%; height: 20px; margin: 2px 0 12px; accent-color: var(--accent); cursor: pointer; }
+      .presets, .trend-buttons, .state-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+      .choice {
+        min-height: 40px;
+        padding: 0 14px;
+        border: 1px solid #2b333e;
+        border-radius: 11px;
+        color: #9da7b5;
+        background: #0c1016;
+        cursor: pointer;
+      }
+      .choice:hover { color: #e8ecf2; border-color: #4d5968; }
+      .choice[aria-pressed="true"] {
+        color: #ffffff;
+        border-color: color-mix(in srgb, var(--accent) 58%, #657185);
+        background: color-mix(in srgb, var(--accent) 13%, #0c1016);
+        box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 14%, transparent) inset;
+      }
+      .preset { position: relative; padding-left: 29px; }
+      .preset::before { content: ""; position: absolute; left: 12px; width: 9px; height: 9px; border-radius: 50%; background: var(--chip); box-shadow: 0 0 9px var(--chip); }
+      .trend-choice { min-width: 64px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+      .trend-choice b { font-size: 21px; line-height: 1; }
+      .trend-choice span { font-size: 11px; }
+
+      .auto-button {
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        min-height: 52px;
+        padding: 0 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        border: 1px solid #3a4451;
+        border-radius: 13px;
+        color: #edf1f6;
+        background: #161c24;
+        cursor: pointer;
+      }
+      .auto-button:hover { background: #1b222c; }
+      .auto-icon { color: var(--accent); font-size: 18px; }
+      .auto-progress { position: absolute; inset: auto 0 0; height: 2px; background: var(--accent); transform: scaleX(0); transform-origin: left; opacity: .8; }
+
+      .legend { padding: 27px 30px 30px; border-top: 1px solid var(--line); background: #0c1016; }
+      .legend-title { margin: 0 0 14px; color: #d8dee7; font-size: 14px; }
+      .range-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; overflow: hidden; border-radius: 12px; background: #202731; }
+      .range {
+        padding: 0 13px 14px;
+        border: 0;
+        border-radius: 0;
+        background: #090c11;
+        transition: background .2s ease;
+      }
+      .range.active { background: color-mix(in srgb, var(--range-color) 10%, #090c11); }
+      .range-swatch { width: calc(100% + 26px); height: 7px; margin: 0 -13px 13px; background: var(--range-color); box-shadow: 0 0 14px color-mix(in srgb, var(--range-color) 62%, transparent); }
+      .range b { display: block; font-size: 13px; }
+      .range span { display: block; margin-top: 6px; color: #7d8795; font-size: 11px; line-height: 1.55; }
+
+      .note { margin: 18px 2px 0; color: #737e8d; font-size: 13px; line-height: 1.65; }
+      .note + .note { margin-top: 4px; }
+      footer { display: flex; flex-wrap: wrap; gap: 10px 20px; padding: 24px 2px 0; color: #687383; font-size: 12px; }
+      footer a { text-decoration: none; border-bottom: 1px dashed #434c59; }
+      footer a:hover { color: #b0bac7; }
+
+      @media (max-width: 760px) {
+        .page { width: min(100% - 24px, 1040px); padding-top: 14px; }
+        .topbar { min-height: 42px; }
+        .brand { padding-top: 28px; }
+        .logo { width: 330px; max-width: 68%; }
+        .top-link { display: none; }
+        .hero { padding: 40px 2px 23px; }
+        .lead { font-size: 15px; }
+        .simulator { border-radius: 18px; }
+        .simulator-head { grid-template-columns: 1fr; min-height: auto; }
+        .readout { min-height: 272px; padding: 24px; border-right: 0; border-bottom: 1px solid var(--line); }
+        .reading-value { font-size: 70px; }
+        .effect-title { margin-top: 28px; }
+        .stage-wrap { min-height: 330px; }
+        .stage-toolbar { justify-content: center; }
+        .controls { grid-template-columns: 1fr; }
+        .control-column { padding: 24px; }
+        .control-column + .control-column { border-left: 0; border-top: 1px solid var(--line); }
+        .legend { padding: 24px; }
+        .range-grid { grid-template-columns: repeat(5, 1fr); }
+        .led { --size: 17px; }
+      }
+
+      @media (max-width: 390px) {
+        .choice { padding: 0 11px; }
+        .preset { padding-left: 27px; }
+        .trend-choice { min-width: 57px; }
+        .trend-choice span { display: none; }
+        .stage-wrap { min-height: 300px; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="topbar">
+        <div class="top-actions">
+          <a class="top-link" href="../installer/" data-i18n="install">安装固件</a>
+          <button id="language" class="language" type="button" aria-label="切换为英文">EN</button>
+        </div>
+      </header>
+      <div class="brand"><img class="logo" src="../installer/assets/suger-rgb-logo.svg" alt="Suger RGB"></div>
+
+      <section class="hero">
+        <p class="lead" data-i18n="lead">调整血糖和趋势，实时预览灯效。</p>
+      </section>
+
+      <section class="simulator" aria-labelledby="simulatorTitle">
+        <div class="simulator-head">
+          <div class="readout">
+            <span id="simulatorTitle" class="status-kicker" data-i18n="currentState">当前模拟</span>
+            <div class="reading-row">
+              <strong id="readingValue" class="reading-value">6.0</strong>
+              <span id="readingUnit" class="reading-unit">mmol/L</span>
+            </div>
+            <div id="secondaryReading" class="secondary-reading">108 mg/dL</div>
+            <div id="effectTitle" class="effect-title"><span class="color-dot"></span><span>绿色 · 常亮</span></div>
+            <div id="trendSymbol" class="trend-symbol">→</div>
+            <p id="effectDescription" class="effect-description">血糖平稳，所有灯珠保持当前血糖颜色。</p>
+          </div>
+
+          <div class="stage-wrap">
+            <div class="stage-toolbar" aria-label="LED layout">
+              <button class="layout-button" type="button" data-layout="strip" aria-pressed="false" data-i18n="strip">灯带</button>
+              <button class="layout-button" type="button" data-layout="ring" aria-pressed="true" data-i18n="ring">灯环</button>
+              <button class="layout-button" type="button" data-layout="panel" aria-pressed="false" data-i18n="panel">灯板</button>
+            </div>
+            <div id="stage" class="stage" aria-label="Virtual WS2812B animation"></div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <div class="control-column">
+            <div class="control-group">
+              <div class="group-head">
+                <span class="group-label" data-i18n="glucose">血糖</span>
+                <span class="group-hint" data-i18n="dragHint">拖动或选择示例</span>
+              </div>
+              <input id="glucoseSlider" class="glucose-slider" type="range" min="2" max="20" value="6" step="0.1" aria-label="Glucose in mmol/L">
+              <div class="presets">
+                <button class="choice preset" type="button" data-glucose="3" style="--chip:#9600dc" aria-pressed="false">3.0</button>
+                <button class="choice preset" type="button" data-glucose="4" style="--chip:#0023ff" aria-pressed="false">4.0</button>
+                <button class="choice preset" type="button" data-glucose="6" style="--chip:#00ff00" aria-pressed="true">6.0</button>
+                <button class="choice preset" type="button" data-glucose="9" style="--chip:#ff4b00" aria-pressed="false">9.0</button>
+                <button class="choice preset" type="button" data-glucose="12" style="--chip:#ff0000" aria-pressed="false">12.0</button>
+                <button class="choice preset" type="button" data-glucose="16" style="--chip:#ff0000" aria-pressed="false">16.0</button>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="group-head">
+                <span class="group-label" data-i18n="trend">趋势</span>
+                <span class="group-hint" data-i18n="nightscoutArrow">Nightscout 箭头</span>
+              </div>
+              <div class="trend-buttons">
+                <button class="choice trend-choice" type="button" data-trend="flat" aria-pressed="true"><b>→</b><span data-i18n="solid">常亮</span></button>
+                <button class="choice trend-choice" type="button" data-trend="singleUp" aria-pressed="false"><b>↑</b><span data-i18n="singleUpLabel">单上</span></button>
+                <button class="choice trend-choice" type="button" data-trend="doubleUp" aria-pressed="false"><b>⇈</b><span data-i18n="doubleUpLabel">双上</span></button>
+                <button class="choice trend-choice" type="button" data-trend="singleDown" aria-pressed="false"><b>↓</b><span data-i18n="singleDownLabel">单下</span></button>
+                <button class="choice trend-choice" type="button" data-trend="doubleDown" aria-pressed="false"><b>⇊</b><span data-i18n="doubleDownLabel">双下</span></button>
+              </div>
+            </div>
+          </div>
+
+          <div class="control-column">
+            <div class="control-group">
+              <div class="group-head"><span class="group-label" data-i18n="otherStates">其他状态</span></div>
+              <div class="state-buttons">
+                <button class="choice state-choice" type="button" data-mode="noData" aria-pressed="false" data-i18n="noDataButton">10 分钟无数据</button>
+                <button class="choice state-choice" type="button" data-mode="config" aria-pressed="false" data-i18n="configButton">配网中</button>
+              </div>
+            </div>
+
+            <div class="control-group">
+              <div class="group-head">
+                <span class="group-label" data-i18n="autoDemo">自动展示</span>
+                <span class="group-hint" data-i18n="autoHint">默认开启</span>
+              </div>
+              <button id="autoButton" class="auto-button" type="button" aria-pressed="true">
+                <span id="autoButtonLabel" data-i18n="pauseAuto">暂停自动演示</span>
+                <span id="autoIcon" class="auto-icon">Ⅱ</span>
+                <span id="autoProgress" class="auto-progress"></span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="legend">
+          <h2 class="legend-title" data-i18n="colorRanges">血糖颜色</h2>
+          <div class="range-grid">
+            <div class="range" data-color="purple" style="--range-color:#9600dc"><div class="range-swatch"></div><b data-i18n="purple">紫色</b><span>&lt; 3.5 mmol/L<br>&lt; 63 mg/dL</span></div>
+            <div class="range" data-color="blue" style="--range-color:#0023ff"><div class="range-swatch"></div><b data-i18n="blue">蓝色</b><span>3.5–4.3 mmol/L<br>63–79 mg/dL</span></div>
+            <div class="range active" data-color="green" style="--range-color:#00ff00"><div class="range-swatch"></div><b data-i18n="green">绿色</b><span>4.4–8.4 mmol/L<br>80–152 mg/dL</span></div>
+            <div class="range" data-color="orange" style="--range-color:#ff4b00"><div class="range-swatch"></div><b data-i18n="orange">橙色</b><span>8.5–9.9 mmol/L<br>153–179 mg/dL</span></div>
+            <div class="range" data-color="red" style="--range-color:#ff0000"><div class="range-swatch"></div><b data-i18n="red">红色</b><span>≥ 10 mmol/L<br>≥ 180 mg/dL</span></div>
+          </div>
+        </div>
+      </section>
+
+      <p class="note" data-i18n="effectControlNote">固件中可以关闭普通动态趋势提示；极低和极高血糖的紧急提示仍会保留。</p>
+      <p class="note" data-i18n="note">这是用于理解显示规则的网页模拟。实体灯的观感会随灯珠数量、排列方式和外壳扩散效果略有不同。</p>
+
+      <footer>
+        <a href="../installer/" data-i18n="install">安装固件</a>
+        <a id="guideLink" href="https://github.com/sid-luo/suger-rgb/blob/main/docs/GUIDE.md" data-i18n="guide">详细使用教程</a>
+        <a href="https://github.com/sid-luo/suger-rgb" target="_blank" rel="noopener noreferrer">GitHub</a>
+      </footer>
+    </main>
+
+    <script>
+      const LED_COUNT = 24;
+      const AUTO_DURATION = 4000;
+      const COLORS = {
+        purple: { hex: '#9600dc', rgb: [150, 0, 220] },
+        blue: { hex: '#0023ff', rgb: [0, 35, 255] },
+        green: { hex: '#00ff00', rgb: [0, 255, 0] },
+        orange: { hex: '#ff4b00', rgb: [255, 75, 0] },
+        red: { hex: '#ff0000', rgb: [255, 0, 0] },
+        white: { hex: '#f4f7ff', rgb: [244, 247, 255] }
+      };
+      const TREND_SYMBOLS = { flat: '→', singleUp: '↑', doubleUp: '⇈', singleDown: '↓', doubleDown: '⇊' };
+
+      const copy = {
+        zh: {
+          documentTitle: 'Suger RGB · 灯效演示', switchLanguage: '切换为英文', switchLabel: 'EN',
+          install: '安装固件', lead: '调整血糖和趋势，实时预览灯效。',
+          effectControlNote: '固件中可以关闭普通动态趋势提示；极低和极高血糖的紧急提示仍会保留。',
+          currentState: '当前模拟', strip: '灯带', ring: '灯环', panel: '灯板', glucose: '血糖', dragHint: '拖动或选择示例',
+          trend: '趋势', nightscoutArrow: 'Nightscout 箭头', solid: '常亮', singleUpLabel: '单上', doubleUpLabel: '双上', singleDownLabel: '单下', doubleDownLabel: '双下',
+          otherStates: '其他状态', noDataButton: '10 分钟无数据', configButton: '配网中', autoDemo: '自动展示', autoHint: '默认开启',
+          pauseAuto: '暂停自动演示', startAuto: '开始自动演示', colorRanges: '血糖颜色', purple: '紫色', blue: '蓝色', green: '绿色', orange: '橙色', red: '红色',
+          note: '这是用于理解显示规则的网页模拟。实体灯的观感会随灯珠数量、排列方式和外壳扩散效果略有不同。',
+          guide: '详细使用教程', guideHref: 'https://github.com/sid-luo/suger-rgb/blob/main/docs/GUIDE.md',
+          colorNames: { purple: '紫色', blue: '蓝色', green: '绿色', orange: '橙色', red: '红色', white: '白色', colorful: '彩色' },
+          effectNames: { solid: '常亮', breathe: '柔和呼吸', wipe: '反向渐进填充', comet: '反向彗星', doublePulse: '双脉冲', twinklefox: 'Twinklefox', noData: '呼吸灯', config: '追逐灯' },
+          descriptions: {
+            solid: '血糖平稳，所有灯珠保持当前血糖颜色。',
+            singleUp: '单上箭头：当前颜色以较柔和的速度明暗变化。',
+            doubleUp: '双上箭头：当前颜色用更快的呼吸提示快速上升。',
+            singleDown: '单下箭头：当前颜色从灯珠末端反向渐进填充。',
+            doubleDown: '双下箭头：当前颜色以反向彗星提示快速下降。',
+            low: '低于 3.3 mmol/L：紫色双脉冲优先于趋势箭头。',
+            high: '达到或超过 15 mmol/L：彩色 Twinklefox 优先于趋势箭头。',
+            noData: '连续 10 分钟没有有效新数据时，显示白色呼吸灯。',
+            config: '设备进入配网状态后，显示低亮度白色追逐。'
+          }
+        },
+        en: {
+          documentTitle: 'Suger RGB · Effect Demo', switchLanguage: 'Switch to Chinese', switchLabel: '中文',
+          install: 'Install firmware', lead: 'Adjust glucose and trend to preview each effect in real time.',
+          effectControlNote: 'Regular dynamic trend alerts can be disabled in the firmware; urgent low and high alerts remain active.',
+          currentState: 'Current simulation', strip: 'Strip', ring: 'Ring', panel: 'Panel', glucose: 'Glucose', dragHint: 'Drag or choose a sample',
+          trend: 'Trend', nightscoutArrow: 'Nightscout arrow', solid: 'Solid', singleUpLabel: 'Single up', doubleUpLabel: 'Double up', singleDownLabel: 'Single down', doubleDownLabel: 'Double down',
+          otherStates: 'Other states', noDataButton: 'No data for 10 min', configButton: 'Setup mode', autoDemo: 'Auto demo', autoHint: 'On by default',
+          pauseAuto: 'Pause automatic demo', startAuto: 'Start automatic demo', colorRanges: 'Glucose colors', purple: 'Purple', blue: 'Blue', green: 'Green', orange: 'Orange', red: 'Red',
+          note: 'This browser simulation explains the display rules. Physical appearance varies slightly with pixel count, layout, enclosure, and diffuser.',
+          guide: 'Full user guide', guideHref: 'https://github.com/sid-luo/suger-rgb/blob/main/docs/GUIDE.en.md',
+          colorNames: { purple: 'Purple', blue: 'Blue', green: 'Green', orange: 'Orange', red: 'Red', white: 'White', colorful: 'Colorful' },
+          effectNames: { solid: 'Solid', breathe: 'Soft breathe', wipe: 'Reverse progressive fill', comet: 'Reverse comet', doublePulse: 'Double pulse', twinklefox: 'Twinklefox', noData: 'Breathe', config: 'Chase' },
+          descriptions: {
+            solid: 'With a flat trend, every pixel stays at the current glucose color.',
+            singleUp: 'Single up: the current color changes gently in brightness.',
+            doubleUp: 'Double up: faster breathing calls attention to a rapid rise.',
+            singleDown: 'Single down: the current color progressively fills in reverse.',
+            doubleDown: 'Double down: a reverse comet calls attention to a rapid fall.',
+            low: 'Below 3.3 mmol/L, a purple double pulse overrides the trend arrow.',
+            high: 'At 15 mmol/L or above, colorful Twinklefox overrides the trend arrow.',
+            noData: 'A white breathing light appears after 10 minutes without valid new data.',
+            config: 'A low-brightness white chase appears while the device is in setup mode.'
+          }
+        }
+      };
+
+      const state = {
+        language: localStorage.getItem('suger-rgb-demo-language') || (navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en'),
+        glucose: 6,
+        trend: 'flat',
+        mode: 'glucose',
+        layout: 'ring',
+        auto: true,
+        autoStarted: performance.now(),
+        autoIndex: -1
+      };
+
+      const scenarios = [
+        { mode: 'glucose', glucose: 6, trend: 'flat' },
+        { mode: 'glucose', glucose: 6, trend: 'singleUp' },
+        { mode: 'glucose', glucose: 6, trend: 'doubleUp' },
+        { mode: 'glucose', glucose: 6, trend: 'singleDown' },
+        { mode: 'glucose', glucose: 6, trend: 'doubleDown' },
+        { mode: 'glucose', glucose: 3, trend: 'doubleDown' },
+        { mode: 'glucose', glucose: 16, trend: 'doubleUp' },
+        { mode: 'noData', glucose: 6, trend: 'flat' },
+        { mode: 'config', glucose: 6, trend: 'flat' }
+      ];
+
+      const stage = document.getElementById('stage');
+      const ledNodes = Array.from({ length: LED_COUNT }, (_, index) => {
+        const node = document.createElement('span');
+        node.className = 'led';
+        node.setAttribute('aria-hidden', 'true');
+        node.dataset.index = index;
+        stage.appendChild(node);
+        return node;
+      });
+
+      const readingValue = document.getElementById('readingValue');
+      const readingUnit = document.getElementById('readingUnit');
+      const secondaryReading = document.getElementById('secondaryReading');
+      const effectTitle = document.getElementById('effectTitle');
+      const trendSymbol = document.getElementById('trendSymbol');
+      const effectDescription = document.getElementById('effectDescription');
+      const glucoseSlider = document.getElementById('glucoseSlider');
+      const autoButton = document.getElementById('autoButton');
+      const autoButtonLabel = document.getElementById('autoButtonLabel');
+      const autoIcon = document.getElementById('autoIcon');
+      const autoProgress = document.getElementById('autoProgress');
+      const languageButton = document.getElementById('language');
+
+      function colorForMgdl(mgdl) {
+        if (mgdl < 63) return 'purple';
+        if (mgdl < 80) return 'blue';
+        if (mgdl < 153) return 'green';
+        if (mgdl < 180) return 'orange';
+        return 'red';
+      }
+
+      function mgdlForGlucose(mmol) {
+        // One-decimal mmol/L values cover more than one integer mg/dL value.
+        // Choose the upper integer so the visible 3.3/3.5/4.4/8.5/10/15
+        // boundaries match the ranges shown to the user.
+        return Math.ceil(mmol * 18 - 0.000001);
+      }
+
+      function selectedEffect() {
+        if (state.mode === 'noData') return { key: 'noData', color: 'white', description: 'noData' };
+        if (state.mode === 'config') return { key: 'config', color: 'white', description: 'config' };
+
+        const mgdl = mgdlForGlucose(state.glucose);
+        const color = colorForMgdl(mgdl);
+        if (mgdl >= 270) return { key: 'twinklefox', color: 'colorful', description: 'high' };
+        if (mgdl < 60) return { key: 'doublePulse', color, description: 'low' };
+        if (state.trend === 'doubleUp') return { key: 'breathe', speed: 100, color, description: 'doubleUp' };
+        if (state.trend === 'singleUp') return { key: 'breathe', speed: 80, color, description: 'singleUp' };
+        if (state.trend === 'singleDown') return { key: 'wipe', speed: 50, color, description: 'singleDown' };
+        if (state.trend === 'doubleDown') return { key: 'comet', speed: 80, color, description: 'doubleDown' };
+        return { key: 'solid', color, description: 'solid' };
+      }
+
+      function updateInterface() {
+        const strings = copy[state.language];
+        const effect = selectedEffect();
+        const physicalColor = effect.color === 'colorful' ? 'red' : effect.color;
+        const accent = COLORS[physicalColor].hex;
+        document.documentElement.style.setProperty('--accent', accent);
+
+        if (state.mode === 'glucose') {
+          const mgdl = mgdlForGlucose(state.glucose);
+          readingValue.textContent = state.glucose.toFixed(1);
+          readingUnit.textContent = 'mmol/L';
+          secondaryReading.textContent = `${mgdl} mg/dL`;
+          trendSymbol.textContent = TREND_SYMBOLS[state.trend];
+          glucoseSlider.value = String(state.glucose);
+        } else {
+          readingValue.textContent = '—';
+          readingUnit.textContent = '';
+          secondaryReading.textContent = state.mode === 'noData' ? strings.noDataButton : strings.configButton;
+          trendSymbol.textContent = state.mode === 'noData' ? '···' : '↻';
+        }
+
+        const colorName = strings.colorNames[effect.color];
+        const effectName = strings.effectNames[effect.key];
+        effectTitle.innerHTML = `<span class="color-dot"></span><span>${colorName} · ${effectName}</span>`;
+        effectDescription.textContent = strings.descriptions[effect.description];
+
+        document.querySelectorAll('[data-glucose]').forEach((button) => {
+          const active = state.mode === 'glucose' && Math.abs(Number(button.dataset.glucose) - state.glucose) < 0.001;
+          button.setAttribute('aria-pressed', String(active));
+        });
+        document.querySelectorAll('[data-trend]').forEach((button) => {
+          button.setAttribute('aria-pressed', String(state.mode === 'glucose' && button.dataset.trend === state.trend));
+        });
+        document.querySelectorAll('[data-mode]').forEach((button) => {
+          button.setAttribute('aria-pressed', String(button.dataset.mode === state.mode));
+        });
+        document.querySelectorAll('.range').forEach((item) => {
+          item.classList.toggle('active', state.mode === 'glucose' && item.dataset.color === colorForMgdl(mgdlForGlucose(state.glucose)));
+        });
+
+        autoButton.setAttribute('aria-pressed', String(state.auto));
+        autoButtonLabel.textContent = state.auto ? strings.pauseAuto : strings.startAuto;
+        autoIcon.textContent = state.auto ? 'Ⅱ' : '▶';
+      }
+
+      function applyLanguage(next) {
+        state.language = next;
+        const strings = copy[next];
+        document.documentElement.lang = next === 'zh' ? 'zh-CN' : 'en';
+        document.title = strings.documentTitle;
+        document.querySelectorAll('[data-i18n]').forEach((node) => {
+          const value = strings[node.dataset.i18n];
+          if (typeof value === 'string') node.textContent = value;
+        });
+        languageButton.textContent = strings.switchLabel;
+        languageButton.setAttribute('aria-label', strings.switchLanguage);
+        document.getElementById('guideLink').href = strings.guideHref;
+        localStorage.setItem('suger-rgb-demo-language', next);
+        updateInterface();
+      }
+
+      function stopAuto() {
+        state.auto = false;
+        autoProgress.style.transform = 'scaleX(0)';
+      }
+
+      function setManualGlucose(value) {
+        stopAuto();
+        state.mode = 'glucose';
+        state.glucose = Math.round(Number(value) * 10) / 10;
+        updateInterface();
+      }
+
+      glucoseSlider.addEventListener('input', (event) => setManualGlucose(event.target.value));
+      document.querySelectorAll('[data-glucose]').forEach((button) => {
+        button.addEventListener('click', () => setManualGlucose(button.dataset.glucose));
+      });
+      document.querySelectorAll('[data-trend]').forEach((button) => {
+        button.addEventListener('click', () => {
+          stopAuto();
+          state.mode = 'glucose';
+          state.trend = button.dataset.trend;
+          updateInterface();
+        });
+      });
+      document.querySelectorAll('[data-mode]').forEach((button) => {
+        button.addEventListener('click', () => {
+          stopAuto();
+          state.mode = button.dataset.mode;
+          updateInterface();
+        });
+      });
+      document.querySelectorAll('[data-layout]').forEach((button) => {
+        button.addEventListener('click', () => {
+          state.layout = button.dataset.layout;
+          document.querySelectorAll('[data-layout]').forEach((item) => item.setAttribute('aria-pressed', String(item === button)));
+          positionLeds();
+        });
+      });
+      autoButton.addEventListener('click', () => {
+        state.auto = !state.auto;
+        if (state.auto) {
+          state.autoStarted = performance.now();
+          state.autoIndex = -1;
+        } else {
+          autoProgress.style.transform = 'scaleX(0)';
+        }
+        updateInterface();
+      });
+      languageButton.addEventListener('click', () => applyLanguage(state.language === 'zh' ? 'en' : 'zh'));
+
+      function positionLeds() {
+        const width = stage.clientWidth;
+        const height = stage.clientHeight;
+        if (!width || !height) return;
+
+        ledNodes.forEach((node, index) => {
+          let x;
+          let y;
+          if (state.layout === 'strip') {
+            const columns = 12;
+            const row = Math.floor(index / columns);
+            const column = index % columns;
+            x = width * .09 + column * (width * .82 / (columns - 1));
+            y = height * (.43 + row * .18);
+          } else if (state.layout === 'panel') {
+            const columns = 6;
+            const rows = 4;
+            const column = index % columns;
+            const row = Math.floor(index / columns);
+            x = width * .22 + column * (width * .56 / (columns - 1));
+            y = height * .24 + row * (height * .52 / (rows - 1));
+          } else {
+            const angle = -Math.PI / 2 + index * Math.PI * 2 / LED_COUNT;
+            const radius = Math.min(width, height) * .34;
+            x = width / 2 + Math.cos(angle) * radius;
+            y = height / 2 + Math.sin(angle) * radius;
+          }
+          node.style.left = `${x}px`;
+          node.style.top = `${y}px`;
+        });
+      }
+
+      function clamp(value, minimum = 0, maximum = 1) {
+        return Math.max(minimum, Math.min(maximum, value));
+      }
+
+      function smoothstep(value) {
+        value = clamp(value);
+        return value * value * (3 - 2 * value);
+      }
+
+      function triangle(value) {
+        value -= Math.floor(value);
+        return 1 - Math.abs(value * 2 - 1);
+      }
+
+      function effectPeriod(speed, slow, fast) {
+        return slow - (slow - fast) * (Math.max(1, Math.min(100, speed)) - 1) / 99;
+      }
+
+      function pulseWindow(position, start, end) {
+        if (position < start || position >= end) return 0;
+        return smoothstep(triangle((position - start) / (end - start)));
+      }
+
+      function hsvToRgb(hue, saturation, value) {
+        const chroma = value * saturation;
+        const sector = ((hue % 360) + 360) % 360 / 60;
+        const x = chroma * (1 - Math.abs(sector % 2 - 1));
+        let rgb = [0, 0, 0];
+        if (sector < 1) rgb = [chroma, x, 0];
+        else if (sector < 2) rgb = [x, chroma, 0];
+        else if (sector < 3) rgb = [0, chroma, x];
+        else if (sector < 4) rgb = [0, x, chroma];
+        else if (sector < 5) rgb = [x, 0, chroma];
+        else rgb = [chroma, 0, x];
+        const match = value - chroma;
+        return rgb.map((channel) => Math.round((channel + match) * 255));
+      }
+
+      function twinkleSeed(index, salt) {
+        const value = Math.sin((index + 1) * (12.9898 + salt * 9.137)) * 43758.5453;
+        return value - Math.floor(value);
+      }
+
+      function ledFrame(index, now, effect) {
+        const base = COLORS[effect.color] || COLORS.red;
+        let rgb = base.rgb;
+        let intensity = .66;
+
+        if (effect.key === 'breathe') {
+          const period = effectPeriod(effect.speed, 7000, 1400);
+          intensity = .13 + smoothstep(triangle(now / period)) * .69;
+        } else if (effect.key === 'doublePulse') {
+          const position = (now % 1100) / 1100;
+          const first = pulseWindow(position, 0, .235);
+          const second = pulseWindow(position, .285, .535);
+          intensity = .1 + Math.max(first, second) * .78;
+        } else if (effect.key === 'wipe') {
+          const period = effectPeriod(effect.speed, 10000, 1600);
+          const edge = triangle(now / period) * LED_COUNT;
+          const position = LED_COUNT - 1 - index;
+          intensity = edge >= position + 1 ? .72 : edge > position ? .09 + (edge - position) * .63 : .09;
+        } else if (effect.key === 'comet') {
+          const period = effectPeriod(effect.speed, 10000, 1000);
+          const phase = (now % period) / period;
+          const head = Math.floor((1 - phase) * LED_COUNT) % LED_COUNT;
+          const distance = (index - head + LED_COUNT) % LED_COUNT;
+          const tailLength = 7;
+          intensity = distance < tailLength ? .08 + Math.pow((tailLength - distance) / tailLength, 2) * .82 : .018;
+        } else if (effect.key === 'twinklefox') {
+          const speed = .00072 + twinkleSeed(index, 1) * .00042;
+          const phase = (now * speed + twinkleSeed(index, 2)) % 1;
+          let sparkle = 0;
+          if (phase < .17) sparkle = smoothstep(phase / .17);
+          else if (phase < .72) sparkle = Math.pow(1 - (phase - .17) / .55, 2);
+          intensity = .015 + sparkle * .96;
+          const hue = twinkleSeed(index, 3) * 360 + now * .014;
+          rgb = hsvToRgb(hue, .92, 1);
+        } else if (effect.key === 'noData') {
+          const period = effectPeriod(42, 6500, 1800);
+          intensity = .08 + smoothstep(triangle(now / period)) * .46;
+        } else if (effect.key === 'config') {
+          const head = Math.floor(now / 80) % LED_COUNT;
+          const distance = (head - index + LED_COUNT) % LED_COUNT;
+          const levels = [.56, .28, .13, .055];
+          intensity = distance < levels.length ? levels[distance] : .012;
+        }
+
+        return { rgb, intensity: clamp(intensity) };
+      }
+
+      function renderLeds(now) {
+        const effect = selectedEffect();
+        ledNodes.forEach((node, index) => {
+          const frame = ledFrame(index, now, effect);
+          const display = frame.rgb.map((channel) => Math.round(channel * Math.pow(frame.intensity, .82)));
+          const glow = frame.rgb.join(',');
+          const glowSize = 5 + frame.intensity * 24;
+          const glowAlpha = .08 + frame.intensity * .68;
+          node.style.backgroundColor = `rgb(${display.join(',')})`;
+          node.style.boxShadow = `0 0 0 2px #05070a, 0 0 ${glowSize}px rgba(${glow},${glowAlpha}), inset 0 1px 3px rgba(255,255,255,.38)`;
+        });
+      }
+
+      function updateAuto(now) {
+        if (!state.auto) return;
+        const elapsed = now - state.autoStarted;
+        const index = Math.floor(elapsed / AUTO_DURATION) % scenarios.length;
+        const progress = (elapsed % AUTO_DURATION) / AUTO_DURATION;
+        autoProgress.style.transform = `scaleX(${progress})`;
+        if (index !== state.autoIndex) {
+          state.autoIndex = index;
+          Object.assign(state, scenarios[index]);
+          updateInterface();
+        }
+      }
+
+      function animate(now) {
+        updateAuto(now);
+        renderLeds(now);
+        requestAnimationFrame(animate);
+      }
+
+      if ('ResizeObserver' in window) new ResizeObserver(positionLeds).observe(stage);
+      window.addEventListener('resize', positionLeds);
+      applyLanguage(state.language);
+      positionLeds();
+      requestAnimationFrame(animate);
+    </script>
+  </body>
+</html>

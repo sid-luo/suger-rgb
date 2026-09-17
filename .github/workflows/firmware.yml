@@ -1,0 +1,35 @@
+name: Firmware
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Build and package ESP32-C3 firmware
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v5.4.4
+          target: esp32c3
+          path: .
+          command: ./tools/package_web_firmware.sh
+
+      - name: Upload merged web-installer firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: suger-rgb-esp32c3
+          path: |
+            docs/installer/firmware/suger-rgb-esp32c3.bin
+            docs/installer/firmware/SHA256SUMS.txt
+          if-no-files-found: error

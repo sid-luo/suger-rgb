@@ -1,0 +1,26 @@
+idf_component_register(
+    SRCS
+        "app_main.c"
+        "app_config.c"
+        "dns_server.c"
+        "led_controller.c"
+        "network_manager.c"
+        "nightscout.c"
+        "portal.c"
+    INCLUDE_DIRS "."
+    REQUIRES
+        esp_driver_gpio
+        esp_driver_rmt
+        esp_event
+        esp_http_client
+        esp_http_server
+        esp_netif
+        esp_timer
+        esp_wifi
+        json
+        lwip
+        mbedtls
+        nvs_flash
+    EMBED_TXTFILES
+        "portal.html"
+)

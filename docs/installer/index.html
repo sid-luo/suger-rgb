@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <meta name="theme-color" content="#090b0f">
+    <meta name="description" content="Install Suger RGB firmware on an ESP32-C3 directly from a supported browser.">
+    <link rel="icon" href="./assets/suger-rgb-logo.svg" type="image/svg+xml">
+    <title>Suger RGB · 网页安装器</title>
+    <script type="module" src="./vendor/esp-web-tools/v7/install-button.js"></script>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        background: #07080a;
+        color: #f7f8fa;
+        --panel: #101216;
+        --panel-soft: #0c0e11;
+        --line: #252a31;
+        --muted: #9ba3af;
+        --blue: #315cff;
+        --green: #30e873;
+        --red: #ff4545;
+        --esp-tools-button-color: #f7f8fa;
+        --esp-tools-button-text-color: #07080a;
+        --esp-tools-button-border-radius: 14px;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 18% 8%, #1438bb18, transparent 28rem),
+          radial-gradient(circle at 82% 24%, #00d86f10, transparent 24rem),
+          #07080a;
+      }
+      a { color: inherit; }
+      button { font: inherit; }
+
+      .page { width: min(100% - 32px, 620px); margin: 0 auto; padding: 22px 0 44px; }
+      .topbar { display: flex; min-height: 38px; align-items: center; justify-content: flex-end; }
+      .logo { display: block; width: min(100%, 420px); height: auto; margin: 0 auto 16px; border-radius: 14px; box-shadow: 0 18px 46px #00000045; }
+      .language {
+        min-width: 54px;
+        min-height: 38px;
+        padding: 0 13px;
+        border: 1px solid #343941;
+        border-radius: 999px;
+        color: #d9dde4;
+        background: #111419;
+        cursor: pointer;
+      }
+      .language:hover { border-color: #626a76; background: #171a20; }
+      .language:focus-visible, .install-button:focus-visible, summary:focus-visible, footer a:focus-visible {
+        outline: 3px solid #6480ff;
+        outline-offset: 3px;
+      }
+
+      .hero { padding: 24px 0 34px; text-align: center; }
+      .product-line { display: inline-flex; align-items: center; gap: 9px; margin: 0; color: #aeb5c0; font-size: 14px; }
+      .leds { display: inline-flex; gap: 5px; }
+      .led { width: 8px; height: 8px; border-radius: 50%; }
+      .led.blue { background: var(--blue); box-shadow: 0 0 12px #315cff; }
+      .led.green { background: var(--green); box-shadow: 0 0 12px #30e873; }
+      .led.red { background: var(--red); box-shadow: 0 0 12px #ff4545; }
+      .lead { margin: 9px auto 0; color: var(--muted); font-size: 17px; line-height: 1.45; }
+
+      .installer {
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(180deg, #12151a, #0d0f13);
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        box-shadow: 0 28px 80px #00000052;
+      }
+      .spectrum { height: 3px; background: linear-gradient(90deg, var(--blue) 0 30%, var(--green) 48% 64%, #ffd23f 76%, var(--red) 100%); }
+      .steps { padding: 8px 30px 4px; }
+      .step { display: grid; grid-template-columns: 38px 1fr; gap: 15px; padding: 25px 0; border-bottom: 1px solid var(--line); }
+      .step:last-child { border-bottom: 0; }
+      .step-number {
+        display: grid;
+        width: 34px;
+        height: 34px;
+        place-items: center;
+        border: 1px solid #3a414c;
+        border-radius: 50%;
+        color: #eef1f5;
+        background: #171a20;
+        font-size: 14px;
+        font-weight: 800;
+      }
+      .step h2 { margin: 4px 0 7px; font-size: 18px; line-height: 1.25; }
+      .step p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.65; }
+      .flash-hint { display: block; margin-top: 3px; }
+      .device { color: #e7eaf0; font-weight: 700; }
+      code { padding: 2px 7px; color: #eef1f5; background: #08090b; border: 1px solid #2e333b; border-radius: 6px; }
+
+      .action { margin-top: 18px; }
+      esp-web-install-button { display: block; width: 100%; }
+      .install-button {
+        width: 100%;
+        min-height: 58px;
+        padding: 0 24px;
+        border: 0;
+        border-radius: 14px;
+        color: #061108;
+        background: #f4f7f5;
+        font-size: 16px;
+        font-weight: 850;
+        cursor: pointer;
+        box-shadow: 0 1px 0 #ffffff inset, 0 10px 30px #00000035;
+        transition: transform .16s ease, background .16s ease, box-shadow .16s ease;
+      }
+      .install-button:hover { background: #ffffff; box-shadow: 0 1px 0 #ffffff inset, 0 12px 34px #00000050, 0 0 0 1px #30e87366; transform: translateY(-1px); }
+      .install-button:active { transform: translateY(0); }
+      .unsupported { display: block; padding: 13px 14px; color: #ffd5d5; background: #281416; border: 1px solid #663037; border-radius: 11px; font-size: 14px; line-height: 1.55; }
+      .erase-note { display: flex; gap: 8px; align-items: flex-start; margin-top: 12px !important; color: #aeb5c0 !important; font-size: 13px !important; }
+      .warning-mark { display: grid; flex: 0 0 auto; width: 18px; height: 18px; place-items: center; border-radius: 50%; color: #111; background: #ffd23f; font-size: 12px; font-weight: 900; }
+
+      .secondary { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 15px; }
+      .secondary a { color: #9fa8b5; font-size: 13px; text-decoration: none; border-bottom: 1px dashed #4a515d; }
+      .secondary a:hover { color: #f0f2f6; }
+
+      .help { margin-top: 16px; border: 1px solid var(--line); border-radius: 14px; background: #0d0f12; }
+      .help summary { padding: 17px 19px; color: #d9dde4; font-size: 15px; font-weight: 700; cursor: pointer; }
+      .help-content { padding: 0 19px 19px; color: var(--muted); font-size: 14px; line-height: 1.65; }
+      .help-content p { margin: 0 0 10px; }
+      .help-content ol { margin: 0; padding-left: 1.35rem; }
+      .help-content li + li { margin-top: 8px; }
+      .driver-note { margin: 15px 0 0 !important; padding: 13px 14px; border: 1px solid #2c333d; border-radius: 10px; background: #11151a; }
+      .driver-note strong { display: block; margin-bottom: 3px; color: #d9dde4; }
+      .driver-link { display: inline-block; margin-top: 7px; color: #b8c5ff; text-underline-offset: 3px; }
+      .driver-link:hover { color: #ffffff; }
+
+      .notice { margin: 24px 2px 0; color: #6f7782; font-size: 12px; line-height: 1.65; text-align: center; }
+      .notice p { margin: 0; }
+      .notice p + p { margin-top: 6px; }
+      .notice strong { color: #89919d; }
+      footer { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px 18px; padding-top: 20px; color: #737c89; font-size: 13px; }
+      footer a { text-decoration: none; border-bottom: 1px dashed #3d444e; }
+      footer a:hover { color: #d9dde4; }
+
+      @media (max-width: 620px) {
+        .page { width: min(100% - 24px, 620px); padding-top: 14px; }
+        .logo { width: min(96%, 360px); margin-bottom: 14px; border-radius: 12px; }
+        .hero { padding: 20px 0 27px; }
+        .lead { max-width: 330px; font-size: 16px; }
+        .installer { border-radius: 18px; }
+        .steps { padding: 4px 19px 0; }
+        .step { grid-template-columns: 34px 1fr; gap: 12px; padding: 22px 0; }
+        .step h2 { font-size: 17px; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .install-button { transition: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="topbar">
+        <button id="language" class="language" type="button" aria-label="切换为英文">EN</button>
+      </header>
+
+      <section class="hero">
+        <img class="logo" src="./assets/suger-rgb-logo.svg" alt="Suger RGB">
+        <p class="product-line">
+          <span class="leds" aria-hidden="true"><span class="led blue"></span><span class="led green"></span><span class="led red"></span></span>
+          <span data-i18n="installerLabel">网页安装器</span>
+        </p>
+        <p class="lead" data-i18n="lead">插上开发板，选择串口，直接写入固件。</p>
+      </section>
+
+      <section class="installer" aria-label="Suger RGB firmware installer">
+        <div class="spectrum" aria-hidden="true"></div>
+        <div class="steps">
+          <section class="step">
+            <span class="step-number" aria-hidden="true">1</span>
+            <div>
+              <h2 data-i18n="connectTitle">连接开发板</h2>
+              <p><span data-i18n="connectText">用支持数据传输的 USB 线连接</span> <span class="device">ESP32-C3 Pro Mini</span><span data-i18n="sentenceEnd">。</span></p>
+            </div>
+          </section>
+
+          <section class="step">
+            <span class="step-number" aria-hidden="true">2</span>
+            <div>
+              <h2 data-i18n="flashTitle">写入固件</h2>
+              <p><span data-i18n="flashText">点击下面的按钮，选择刚刚出现的串口。</span><span class="flash-hint" data-i18n="flashHint">如果不确定是哪个，可以通过多次插拔来确认。</span></p>
+              <div class="action">
+                <esp-web-install-button manifest="./manifest.json">
+                  <button id="installTitle" class="install-button" slot="activate" data-i18n="installButton">连接设备并安装</button>
+                  <span class="unsupported" slot="unsupported" data-i18n="unsupported">请使用桌面版 Chrome、Edge 或最新版 Firefox 打开此页面。</span>
+                  <span class="unsupported" slot="not-allowed" data-i18n="notAllowed">安装器必须通过 HTTPS 或 localhost 打开。</span>
+                </esp-web-install-button>
+              </div>
+              <p class="erase-note"><span class="warning-mark" aria-hidden="true">!</span><span data-i18n="eraseNote">刷写会清除旧固件和已保存的配网信息。</span></p>
+              <nav class="secondary" aria-label="Firmware downloads">
+                <a href="./firmware/suger-rgb-esp32c3.bin" download data-i18n="downloadButton">下载完整 BIN</a>
+                <a href="./firmware/SHA256SUMS.txt" target="_blank" rel="noopener" data-i18n="checksum">SHA256 校验值</a>
+              </nav>
+            </div>
+          </section>
+
+          <section class="step">
+            <span class="step-number" aria-hidden="true">3</span>
+            <div>
+              <h2 data-i18n="setupTitle">重新配网</h2>
+              <p><span data-i18n="setupText">写入完成后，连接无密码热点</span> <code>Suger-RGB-XXXX</code> <span data-i18n="setupTail">完成设置。</span></p>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <details class="help">
+        <summary data-i18n="bootTitle">串口没有出现？</summary>
+        <div class="help-content">
+          <p data-i18n="bootIntro">多数情况是数据线问题，请按顺序尝试：</p>
+          <ol>
+            <li data-i18n="bootCable">换一根能让手机和电脑互传照片或文件的 USB 数据线；只能充电的线不会出现串口。</li>
+            <li data-i18n="bootMode">拔掉开发板，按住板上的 BOOT 键，再插入 USB；等待两秒后松开 BOOT，然后重新点击安装。</li>
+            <li data-i18n="bootApps">最后，关闭可能占用串口的软件，例如 Arduino IDE、PlatformIO 或串口调试工具。如果你不知道这些是什么，通常说明你没有打开它们，可以跳过这一步。</li>
+          </ol>
+          <p class="driver-note">
+            <strong data-i18n="driverTitle">系统与驱动</strong>
+            <span data-i18n="driverText">macOS 无需手动安装驱动；Windows 10/11 联网时通常会自动安装。若设备管理器中出现两个 USB JTAG/serial debug unit，且“端口（COM 和 LPT）”下没有 USB 串行设备（COMx），说明驱动没有正确安装。</span>
+            <a id="driverHelpLink" class="driver-link" href="https://docs.espressif.com/projects/esp-techpedia/zh_CN/latest/esp-friends/get-started/try-firmware/try-firmware-usb-driver.html" target="_blank" rel="noopener noreferrer" data-i18n="driverLink">查看乐鑫官方驱动修复步骤</a>
+          </p>
+        </div>
+      </details>
+
+      <div class="notice" role="note">
+        <p><strong data-i18n="noticeLabel">DIY 项目 · 非医疗设备</strong> <span data-i18n="importantText">Suger RGB 不应用于治疗决策，设备搭建与使用风险由用户承担。</span></p>
+        <p><strong data-i18n="photosensitiveLabel">光敏安全：</strong> <span data-i18n="photosensitiveText">本设备可产生动态或闪烁灯光。光敏性癫痫、偏头痛患者或对闪光敏感者，请避免使用快速闪烁效果；如有不适，请立即停止使用。</span></p>
+      </div>
+
+      <footer>
+        <a href="https://github.com/sid-luo/suger-rgb" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="../demo/" data-i18n="demo">灯效演示</a>
+        <a id="guideLink" href="https://github.com/sid-luo/suger-rgb/blob/main/docs/INSTALL.md" data-i18n="guide">完整安装说明</a>
+      </footer>
+    </main>
+
+    <script>
+      const copy = {
+        zh: {
+          documentTitle: 'Suger RGB · 网页安装器', switchLanguage: '切换为英文', switchLabel: 'EN',
+          installerLabel: '网页安装器', lead: '插上开发板，选择串口，直接写入固件。',
+          connectTitle: '连接开发板', connectText: '用支持数据传输的 USB 线连接', sentenceEnd: '。',
+          flashTitle: '写入固件', flashText: '点击下面的按钮，选择刚刚出现的串口。', flashHint: '如果不确定是哪个，可以通过多次插拔来确认。', installButton: '连接设备并安装',
+          unsupported: '请使用桌面版 Chrome、Edge 或最新版 Firefox 打开此页面。',
+          notAllowed: '安装器必须通过 HTTPS 或 localhost 打开。',
+          eraseNote: '刷写会清除旧固件和已保存的配网信息。', downloadButton: '下载完整 BIN', checksum: 'SHA256 校验值',
+          setupTitle: '重新配网', setupText: '写入完成后，连接无密码热点', setupTail: '完成设置。',
+          bootTitle: '串口没有出现？',
+          bootIntro: '多数情况是数据线问题，请按顺序尝试：',
+          bootCable: '换一根能让手机和电脑互传照片或文件的 USB 数据线；只能充电的线不会出现串口。',
+          bootMode: '拔掉开发板，按住板上的 BOOT 键，再插入 USB；等待两秒后松开 BOOT，然后重新点击安装。',
+          bootApps: '最后，关闭可能占用串口的软件，例如 Arduino IDE、PlatformIO 或串口调试工具。如果你不知道这些是什么，通常说明你没有打开它们，可以跳过这一步。',
+          driverTitle: '系统与驱动',
+          driverText: 'macOS 无需手动安装驱动；Windows 10/11 联网时通常会自动安装。若设备管理器中出现两个 USB JTAG/serial debug unit，且“端口（COM 和 LPT）”下没有 USB 串行设备（COMx），说明驱动没有正确安装。',
+          driverLink: '查看乐鑫官方驱动修复步骤', driverHref: 'https://docs.espressif.com/projects/esp-techpedia/zh_CN/latest/esp-friends/get-started/try-firmware/try-firmware-usb-driver.html',
+          noticeLabel: 'DIY 项目 · 非医疗设备', importantText: 'Suger RGB 不应用于治疗决策，设备搭建与使用风险由用户承担。',
+          photosensitiveLabel: '光敏安全：', photosensitiveText: '本设备可产生动态或闪烁灯光。光敏性癫痫、偏头痛患者或对闪光敏感者，请避免使用快速闪烁效果；如有不适，请立即停止使用。',
+          demo: '灯效演示', guide: '完整安装说明', guideHref: 'https://github.com/sid-luo/suger-rgb/blob/main/docs/INSTALL.md'
+        },
+        en: {
+          documentTitle: 'Suger RGB · Web Installer', switchLanguage: 'Switch to Chinese', switchLabel: '中文',
+          installerLabel: 'Web installer', lead: 'Plug in the board, choose its port, and flash the firmware.',
+          connectTitle: 'Connect the board', connectText: 'Use a USB data cable to connect your', sentenceEnd: '.',
+          flashTitle: 'Flash the firmware', flashText: 'Select the serial port that just appeared.', flashHint: 'If you are not sure which one it is, reconnect the board a few times to confirm.', installButton: 'Connect and install',
+          unsupported: 'Open this page in desktop Chrome, Edge, or the latest Firefox.',
+          notAllowed: 'The installer must be opened over HTTPS or localhost.',
+          eraseNote: 'Flashing erases the previous firmware and saved setup.', downloadButton: 'Download full BIN', checksum: 'SHA256 checksum',
+          setupTitle: 'Set up again', setupText: 'When flashing finishes, join the open', setupTail: 'network to finish setup.',
+          bootTitle: 'Serial port missing?',
+          bootIntro: 'The cable is the most common cause. Try these steps in order:',
+          bootCable: 'Try a USB cable that can transfer photos or files between a phone and computer. A charge-only cable will not expose a serial port.',
+          bootMode: 'Unplug the board, hold its BOOT button, and reconnect USB. Wait two seconds, release BOOT, then click install again.',
+          bootApps: 'Finally, close apps that may be using the serial port, such as Arduino IDE, PlatformIO, or a serial monitor. If those names mean nothing to you, you probably are not running them and can skip this step.',
+          driverTitle: 'System and driver',
+          driverText: 'macOS requires no manual driver. Windows 10/11 normally installs it automatically when online. If Device Manager shows two USB JTAG/serial debug unit entries and no USB Serial Device (COMx) under Ports, the driver was not installed correctly.',
+          driverLink: 'Open Espressif\'s official driver repair guide', driverHref: 'https://docs.espressif.com/projects/esp-techpedia/en/latest/esp-friends/get-started/try-firmware/try-firmware-usb-driver.html',
+          noticeLabel: 'DIY project · Not a medical device', importantText: 'Do not use Suger RGB for treatment decisions. You are responsible for building and using the device.',
+          photosensitiveLabel: 'Photosensitivity:', photosensitiveText: 'This device can produce dynamic or flashing lights. If you have photosensitive epilepsy, migraines, or sensitivity to flashing light, avoid rapid flashing effects and stop use immediately if you feel unwell.',
+          demo: 'Effect demo', guide: 'Full installation guide', guideHref: 'https://github.com/sid-luo/suger-rgb/blob/main/docs/INSTALL.en.md'
+        }
+      };
+
+      const languageButton = document.getElementById('language');
+      let language = localStorage.getItem('suger-rgb-installer-language') || (navigator.language.toLowerCase().startsWith('zh') ? 'zh' : 'en');
+
+      function applyLanguage(next) {
+        language = next;
+        const strings = copy[language];
+        document.documentElement.lang = language === 'zh' ? 'zh-CN' : 'en';
+        document.title = strings.documentTitle;
+        document.querySelectorAll('[data-i18n]').forEach((node) => {
+          const value = strings[node.dataset.i18n];
+          if (value) node.textContent = value;
+        });
+        languageButton.textContent = strings.switchLabel;
+        languageButton.setAttribute('aria-label', strings.switchLanguage);
+        document.getElementById('guideLink').href = strings.guideHref;
+        document.getElementById('driverHelpLink').href = strings.driverHref;
+        localStorage.setItem('suger-rgb-installer-language', language);
+      }
+
+      languageButton.addEventListener('click', () => applyLanguage(language === 'zh' ? 'en' : 'zh'));
+      applyLanguage(language);
+
+    </script>
+  </body>
+</html>

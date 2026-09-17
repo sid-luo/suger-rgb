@@ -1,0 +1,810 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#07090d">
+  <title>Suger RGB</title>
+  <style>
+    :root { color-scheme: dark; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: #07090d; color: #f5f7fa; padding: 22px 16px; }
+    main { width: min(100%, 520px); margin: 0 auto; }
+    .topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+    .brand-mark { display: block; flex: 0 0 auto; width: 194px; height: 46px; margin: 0 0 18px; border-radius: 6px; }
+    h1 { font-size: 25px; margin: 0 0 8px; }
+    .lead { color: #aeb7c5; line-height: 1.6; margin: 0 0 22px; }
+    .card { border: 1px solid #252b36; background: #10141b; border-radius: 16px; padding: 18px; }
+    label { display: block; margin: 15px 0 7px; font-size: 14px; color: #dce2ea; }
+    label:first-child { margin-top: 0; }
+    input { width: 100%; border: 1px solid #343c49; border-radius: 10px; background: #080b10; color: #fff; padding: 13px 12px; font-size: 16px; outline: none; }
+    input:focus { border-color: #fff; box-shadow: 0 0 0 3px #ffffff18; }
+    .hint { margin: 6px 1px 0; color: #8994a4; font-size: 12px; line-height: 1.45; }
+    code { color: #cbd3df; font: 12px ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .hint-line { display: flex; align-items: center; gap: 7px; margin: 6px 1px 0; color: #8994a4; font-size: 12px; line-height: 1.45; }
+    .hint-line > span { min-width: 0; }
+    .info-panel { margin-top: 9px; border: 1px solid #303948; border-radius: 11px; padding: 11px 12px; color: #aeb8c7; background: #090d13; font-size: 12px; line-height: 1.55; }
+    .info-panel p { margin: 0 0 8px; }
+    .info-panel p:last-child { margin-bottom: 0; }
+    .info-panel a { color: #d9e7ff; text-decoration: underline; text-underline-offset: 3px; }
+    [hidden] { display: none !important; }
+    .color-guide { margin-top: 16px; border: 1px solid #2b3340; border-radius: 12px; padding: 12px 13px; background: #0b0f15; }
+    .color-guide-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .color-guide-title { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .color-guide-title strong { font-size: 14px; }
+    .mini-colors { display: flex; align-items: center; gap: 5px; }
+    .color-dot, .color-swatch { flex: 0 0 auto; border-radius: 50%; background: var(--swatch); box-shadow: 0 0 9px var(--swatch); }
+    .color-dot { width: 9px; height: 9px; }
+    .color-list { display: grid; gap: 7px; }
+    .color-row { display: grid; grid-template-columns: 14px minmax(42px,auto) minmax(0,1fr); align-items: center; gap: 9px; padding: 8px 9px; border: 1px solid #252d38; border-radius: 9px; background: #080b10; }
+    .color-swatch { width: 14px; height: 14px; }
+    .color-name { color: #e7ebf1; font-size: 12px; font-weight: 700; }
+    .color-range { color: #aeb7c5; font: 11px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; text-align: right; }
+    .switch-row { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 8px 18px; margin-top: 18px; border: 1px solid #2b3340; border-radius: 12px; padding: 13px; background: #0b0f15; }
+    .switch-copy strong { display: block; font-size: 14px; margin-bottom: 4px; }
+    .switch-copy span { display: block; color: #8994a4; font-size: 12px; line-height: 1.4; }
+    .switch-title { display: flex; align-items: center; gap: 7px; margin-bottom: 4px; }
+    .switch-title strong { margin: 0; }
+    .switch-info { grid-column: 1 / -1; }
+    label.switch { position: relative; flex: 0 0 auto; width: 50px; height: 29px; margin: 0; }
+    .switch input { position: absolute; opacity: 0; pointer-events: none; }
+    .switch-track { position: absolute; inset: 0; border-radius: 999px; background: #353d49; transition: .18s; }
+    .switch-track::after { content: ""; position: absolute; width: 23px; height: 23px; left: 3px; top: 3px; border-radius: 50%; background: #fff; transition: .18s; }
+    .switch input:checked + .switch-track { background: #2d9b62; }
+    .switch input:checked + .switch-track::after { transform: translateX(21px); }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+    button { border: 0; border-radius: 11px; min-height: 46px; padding: 0 14px; font-size: 15px; font-weight: 700; cursor: pointer; }
+    button.language-toggle { min-width: 52px; min-height: 32px; margin-top: 8px; padding: 0 11px; border: 1px solid #3b4452; border-radius: 999px; color: #dce4ef; background: #111720; font-size: 13px; }
+    #validate { background: #fff; color: #05070a; }
+    #save { background: #2d9b62; color: #fff; }
+    button:disabled { cursor: not-allowed; opacity: .35; }
+    button.info-button { flex: 0 0 auto; width: 21px; height: 21px; min-height: 21px; padding: 0; border: 1px solid #596575; border-radius: 50%; color: #dce4ef; background: #161c25; font-size: 12px; line-height: 19px; }
+    button.info-button[aria-expanded=true] { color: #07090d; background: #f2f5f8; border-color: #f2f5f8; }
+    .critical-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-top: 10px; }
+    button.demo-critical { min-height: 64px; padding: 9px 6px; color: #fff; background: #0a0d12; border: 1px solid #3b4452; }
+    button.demo-critical strong { display: block; font-size: 14px; line-height: 1.2; }
+    button.demo-critical small { display: block; margin-top: 5px; color: #aeb7c5; font-size: 10px; font-weight: 500; }
+    button.demo-critical.high { border-color: #8d3434; background: #2a1012; }
+    button.demo-critical.low { border-color: #69378b; background: #1e1029; }
+    .arrow-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 7px; margin-top: 9px; }
+    button.demo-arrow { min-width: 0; min-height: 48px; padding: 0; color: var(--trend-color,#00ff00); background: #090c11; border: 1px solid var(--trend-color,#00ff00); border-radius: 9px; font-size: 25px; line-height: 1; text-shadow: 0 0 12px currentColor; }
+    button.demo-choice.active { border-color: #fff; box-shadow: 0 0 0 2px #ffffff24 inset,0 0 13px #ffffff22; }
+    #demoError { display: none; margin: 9px 1px 0; color: #ffb8b8; font-size: 12px; line-height: 1.4; }
+    #demoError.visible { display: block; }
+    #result { display: none; margin-top: 14px; border-radius: 11px; padding: 13px; line-height: 1.55; font-size: 14px; white-space: pre-line; }
+    #result.ok { display: block; color: #c9f7dc; background: #123423; border: 1px solid #246747; }
+    #result.warn { display: block; color: #ffe7ad; background: #352a11; border: 1px solid #6e5723; }
+    #result.error { display: block; color: #ffd0d0; background: #391818; border: 1px solid #762d2d; }
+    .footer { color: #737d8c; font-size: 12px; line-height: 1.55; margin-top: 15px; }
+    .footer p { margin: 0 0 8px; }
+    .project-link { display: inline-block; color: #697382; border-bottom: 1px dashed #444d5a; }
+    .disclaimer { margin-top: 14px; padding: 11px 12px; color: #7f8998; background: #0c1016; border: 1px solid #252c36; border-radius: 9px; }
+    .disclaimer strong { display: block; margin-bottom: 3px; color: #aeb7c5; font-size: 11px; letter-spacing: .06em; }
+    .disclaimer p { margin: 0; }
+    @media (max-width: 360px) {
+      .color-row { grid-template-columns: 14px minmax(0,1fr); }
+      .color-range { grid-column: 2; text-align: left; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="topbar">
+      <svg class="brand-mark" viewBox="0 0 590 140" role="img" aria-label="Suger RGB">
+        <rect width="590" height="140" rx="18" fill="#fff"/>
+        <circle cx="85" cy="70" r="40" fill="#0023ff"/>
+        <path d="M562 -26Q416 -26 303 18Q190 62 123 144Q56 226 46 338H385Q393 280 437 245Q482 211 557 211Q628 211 668 236Q708 261 708 301Q708 336 675 357Q643 379 580 390L389 424Q233 452 151 531Q70 610 70 735Q70 839 126 916Q183 993 290 1036Q396 1078 543 1078Q691 1078 799 1033Q907 989 967 907Q1028 826 1031 713H714Q713 769 668 805Q624 842 555 842Q488 842 450 816Q413 790 413 751Q413 718 443 696Q473 674 527 664L739 625Q903 595 980 525Q1058 455 1058 337Q1058 229 995 147Q933 65 822 19Q710 -26 562 -26ZM1562 -23Q1448 -23 1366 26Q1285 76 1242 169Q1199 262 1199 392V1056H1543V464Q1543 371 1589 321Q1634 271 1715 271Q1769 271 1810 294Q1850 317 1872 363Q1894 410 1894 482V1056H2238V0H1898V283H1949Q1900 144 1807 60Q1715 -23 1562 -23Z" transform="translate(127.713 108.1) scale(.072314 -.072314)" fill="#090b0f"/>
+        <circle cx="335.58" cy="70" r="40" fill="#00ff00"/>
+        <path d="M596 -24Q434 -24 312 47Q189 117 120 242Q52 367 52 528Q52 689 121 814Q189 939 310 1009Q431 1080 587 1080Q706 1080 804 1040Q902 1001 974 928Q1045 855 1084 755Q1123 656 1123 536V443H164V649H962L804 607Q804 675 779 724Q754 773 707 800Q661 826 596 826Q531 826 485 800Q438 773 413 724Q387 675 387 607V455Q387 385 414 333Q440 280 489 252Q539 224 608 224Q659 224 699 238Q739 252 766 278Q793 304 806 338H1115Q1096 232 1023 150Q950 69 840 22Q729 -24 596 -24Z" transform="translate(377.801 108.1) scale(.072314 -.072314)" fill="#090b0f"/>
+        <circle cx="504.99" cy="70" r="40" fill="#ff0000"/>
+      </svg>
+      <button id="languageToggle" class="language-toggle" type="button" aria-label="Switch to English">EN</button>
+    </div>
+    <h1>Suger RGB</h1>
+    <p class="lead" data-i18n="lead">填写下面的信息。设备会先连接 Wi-Fi，并从 Nightscout 读到真实血糖后，才允许保存。</p>
+    <section class="card">
+      <form id="form" novalidate>
+        <label for="ssid" data-i18n="ssidLabel">Wi-Fi 名称</label>
+        <input id="ssid" maxlength="32" autocomplete="off" required>
+
+        <label for="password" data-i18n="passwordLabel">Wi-Fi 密码</label>
+        <input id="password" type="password" maxlength="64" autocomplete="new-password">
+        <p id="passwordHint" class="hint">开放网络可留空。</p>
+
+        <label for="nightscout" data-i18n="nightscoutLabel">Nightscout 地址</label>
+        <input id="nightscout" maxlength="192" inputmode="url" placeholder="https://xxx.xxx.xx" required>
+        <div class="hint-line">
+          <span><span data-i18n="nightscoutHintPrefix">输入</span> <code>https://xxx.xxx.xx</code> <span data-i18n="or">或</span> <code>xxx.xxx.xx</code><span data-i18n="nightscoutHintSuffix">即可。</span></span>
+          <button class="info-button" type="button" aria-label="Nightscout 地址说明" data-i18n-aria-label="nightscoutInfoLabel" aria-controls="nightscoutInfo" aria-expanded="false">!</button>
+        </div>
+        <div id="nightscoutInfo" class="info-panel" hidden>
+          <p data-i18n="nightscoutAuto">设备会自动补全 HTTPS 和 Nightscout API 后缀，仅支持可匿名读取的站点。</p>
+          <p><span data-i18n="nightscoutDeployPrefix">不知道 Nightscout 是什么，或者不会部署？可以使用</span> <a href="https://github.com/sid-luo/nightscout-for-cloudflare#rgb" target="_blank" rel="noopener noreferrer">Nightscout for Cloudflare</a> <span data-i18n="nightscoutDeploySuffix">免费一键部署。</span></p>
+        </div>
+
+        <label for="ledCount" data-i18n="ledCountLabel">LED 灯珠数量（1–128）</label>
+        <input id="ledCount" type="number" min="1" max="128" step="1" inputmode="numeric" required>
+
+        <div class="color-guide">
+          <div class="color-guide-head">
+            <div class="color-guide-title">
+              <strong data-i18n="colorGuideTitle">血糖颜色</strong>
+              <span class="mini-colors" aria-hidden="true">
+                <span class="color-dot" style="--swatch:#9600DC"></span>
+                <span class="color-dot" style="--swatch:#0023FF"></span>
+                <span class="color-dot" style="--swatch:#00FF00"></span>
+                <span class="color-dot" style="--swatch:#FF4B00"></span>
+                <span class="color-dot" style="--swatch:#FF0000"></span>
+              </span>
+            </div>
+            <button class="info-button" type="button" aria-label="血糖颜色说明" data-i18n-aria-label="colorGuideInfoLabel" aria-controls="colorInfo" aria-expanded="false">!</button>
+          </div>
+          <div id="colorInfo" class="info-panel" hidden>
+            <div class="color-list">
+              <div class="color-row">
+                <span class="color-swatch" style="--swatch:#9600DC" aria-hidden="true"></span>
+                <span class="color-name" data-i18n="colorPurple">紫色</span>
+                <span class="color-range">&lt;3.5 mmol/L · &lt;63 mg/dL</span>
+              </div>
+              <div class="color-row">
+                <span class="color-swatch" style="--swatch:#0023FF" aria-hidden="true"></span>
+                <span class="color-name" data-i18n="colorBlue">蓝色</span>
+                <span class="color-range">3.5–&lt;4.4 mmol/L · 63–79 mg/dL</span>
+              </div>
+              <div class="color-row">
+                <span class="color-swatch" style="--swatch:#00FF00" aria-hidden="true"></span>
+                <span class="color-name" data-i18n="colorGreen">绿色</span>
+                <span class="color-range">4.4–&lt;8.5 mmol/L · 80–152 mg/dL</span>
+              </div>
+              <div class="color-row">
+                <span class="color-swatch" style="--swatch:#FF4B00" aria-hidden="true"></span>
+                <span class="color-name" data-i18n="colorOrange">橙色</span>
+                <span class="color-range">8.5–&lt;10 mmol/L · 153–179 mg/dL</span>
+              </div>
+              <div class="color-row">
+                <span class="color-swatch" style="--swatch:#FF0000" aria-hidden="true"></span>
+                <span class="color-name" data-i18n="colorRed">红色</span>
+                <span class="color-range">≥10 mmol/L · ≥180 mg/dL</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="switch-row">
+          <div class="switch-copy">
+            <div class="switch-title">
+              <strong data-i18n="trendTitle">动态趋势提示</strong>
+              <button class="info-button" type="button" aria-label="动态趋势提示说明" data-i18n-aria-label="trendInfoLabel" aria-controls="trendInfo" aria-expanded="false">!</button>
+            </div>
+            <span data-i18n="trendDescription">按 Nightscout 趋势箭头切换灯效；默认开启。</span>
+          </div>
+          <label class="switch" aria-label="动态趋势提示" data-i18n-aria-label="trendTitle">
+            <input id="dynamicTrend" type="checkbox" checked>
+            <span class="switch-track"></span>
+          </label>
+          <div id="trendInfo" class="info-panel switch-info" hidden>
+            <p data-i18n="criticalNotice">&lt;3.3 mmol/L（&lt;60 mg/dL）和 ≥15 mmol/L（≥270 mg/dL）的紧急提示无法关闭。</p>
+            <div class="critical-grid">
+              <button class="demo-choice demo-critical low" type="button" data-effect="3" data-glucose="55" data-speed="100" data-reverse="false" aria-label="三点三以下趋势演示" data-i18n-aria-label="criticalLowLabel">
+                <strong>&lt;3.3 mmol/L</strong><small><span data-i18n="or">或</span> &lt;60 mg/dL</small>
+              </button>
+              <button class="demo-choice demo-critical high" type="button" data-effect="11" data-glucose="290" data-speed="100" data-reverse="false" aria-label="十五以上趋势演示" data-i18n-aria-label="criticalHighLabel">
+                <strong>≥15 mmol/L</strong><small><span data-i18n="or">或</span> ≥270 mg/dL</small>
+              </button>
+            </div>
+            <div class="arrow-grid">
+              <button class="demo-choice demo-arrow" type="button" data-effect="2" data-speed="80" data-reverse="false" aria-label="单升" data-i18n-aria-label="singleUpLabel">↑</button>
+              <button class="demo-choice demo-arrow" type="button" data-effect="2" data-speed="100" data-reverse="false" aria-label="双升" data-i18n-aria-label="doubleUpLabel">⇈</button>
+              <button class="demo-choice demo-arrow" type="button" data-effect="8" data-speed="50" data-reverse="true" aria-label="单降" data-i18n-aria-label="singleDownLabel">↓</button>
+              <button class="demo-choice demo-arrow" type="button" data-effect="5" data-speed="80" data-reverse="true" aria-label="双降" data-i18n-aria-label="doubleDownLabel">⇊</button>
+            </div>
+            <p id="demoError" role="status"></p>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="validate" type="submit" data-i18n="validate">验证连接</button>
+          <button id="save" type="button" disabled data-i18n="save">保存并重启</button>
+        </div>
+      </form>
+      <div id="result" role="status"></div>
+    </section>
+
+    <footer class="footer">
+      <p data-i18n="bootHint">正常运行时长按 BOOT，直到灯效变成白光追逐，即可重新进入本页面。</p>
+      <a id="projectLink" class="project-link" href="https://github.com/sid-luo/suger-rgb" target="_blank" rel="noopener noreferrer" data-i18n="projectLink">Suger RGB 开源项目 · GitHub</a>
+      <div class="disclaimer" role="note" aria-labelledby="disclaimerTitle">
+        <strong id="disclaimerTitle" data-i18n="disclaimerTitle">重要提示</strong>
+        <p data-i18n="disclaimerText">Suger RGB 是一个开源社区 DIY 项目，不由任何公司提供正式支持，也未获批准或受监管用于糖尿病治疗。用户须自行负责设备的搭建与运行，并自行承担使用风险。</p>
+      </div>
+    </footer>
+  </main>
+  <script>
+    const translations = {
+      zh: {
+        pageTitle: 'Suger RGB',
+        languageButton: 'EN',
+        languageButtonLabel: '切换为英文',
+        lead: '填写下面的信息。设备会先连接 Wi-Fi，并从 Nightscout 读到真实血糖后，才允许保存。',
+        ssidLabel: 'Wi-Fi 名称',
+        passwordLabel: 'Wi-Fi 密码',
+        passwordOpen: '开放网络可留空。',
+        passwordSaved: '留空表示继续使用已经保存的密码。',
+        nightscoutLabel: 'Nightscout 地址',
+        nightscoutHintPrefix: '输入',
+        nightscoutHintSuffix: '即可。',
+        nightscoutInfoLabel: 'Nightscout 地址说明',
+        nightscoutAuto: '设备会自动补全 HTTPS 和 Nightscout API 后缀，仅支持可匿名读取的站点。',
+        nightscoutDeployPrefix: '不知道 Nightscout 是什么，或者不会部署？可以使用',
+        nightscoutDeploySuffix: '免费一键部署。',
+        ledCountLabel: 'LED 灯珠数量（1–128）',
+        colorGuideTitle: '血糖颜色',
+        colorGuideInfoLabel: '血糖颜色说明',
+        colorPurple: '紫色',
+        colorBlue: '蓝色',
+        colorGreen: '绿色',
+        colorOrange: '橙色',
+        colorRed: '红色',
+        trendTitle: '动态趋势提示',
+        trendInfoLabel: '动态趋势提示说明',
+        trendDescription: '按 Nightscout 趋势箭头切换灯效；默认开启。',
+        criticalNotice: '<3.3 mmol/L（<60 mg/dL）和 ≥15 mmol/L（≥270 mg/dL）的紧急提示无法关闭。',
+        criticalLowLabel: '三点三以下趋势演示',
+        criticalHighLabel: '十五以上趋势演示',
+        singleUpLabel: '单升',
+        doubleUpLabel: '双升',
+        singleDownLabel: '单降',
+        doubleDownLabel: '双降',
+        or: '或',
+        validate: '验证连接',
+        validating: '正在验证…',
+        save: '保存并重启',
+        bootHint: '正常运行时长按 BOOT，直到灯效变成白光追逐，即可重新进入本页面。',
+        projectLink: 'Suger RGB 开源项目 · GitHub',
+        disclaimerTitle: '重要提示',
+        disclaimerText: 'Suger RGB 是一个开源社区 DIY 项目，不由任何公司提供正式支持，也未获批准或受监管用于糖尿病治疗。用户须自行负责设备的搭建与运行，并自行承担使用风险。',
+        connecting: '正在连接 Wi-Fi 并读取 Nightscout，通常需要几秒钟。',
+        configLoadFailed: '读取当前配置失败：{error}',
+        restoreAutoFailed: '恢复自动显示失败：{error}',
+        effectStatusFailed: '读取当前灯光状态失败：{error}',
+        effectPreviewFailed: '灯光预览失败：{error}',
+        justNow: '刚刚',
+        minutesAgo: '{minutes} 分钟前',
+        latestRecord: '已读取最新记录',
+        validationSuccess: 'Nightscout 连接成功\n{mmol} mmol/L（{sgv} mg/dL）\n最新数据：{age}\n趋势：{direction}',
+        staleWarning: '数据已超过 10 分钟，保存后灯会显示白光呼吸。',
+        saveSuccess: '配置已保存，设备正在重启，随后会自动连接家庭 Wi-Fi。',
+        directionDoubleUp: '快速上升 ⇈',
+        directionSingleUp: '上升 ↑',
+        directionFortyFiveUp: '缓慢上升 ↗',
+        directionFlat: '平稳 →',
+        directionFortyFiveDown: '缓慢下降 ↘',
+        directionSingleDown: '下降 ↓',
+        directionDoubleDown: '快速下降 ⇊',
+        directionUnknown: '未知',
+        error_invalid_request: '请求内容格式错误',
+        error_incomplete_config: '请完整填写配网信息',
+        error_ssid_invalid: 'Wi-Fi 名称不能为空或超过 32 字节',
+        error_wifi_password_too_long: 'Wi-Fi 密码太长',
+        error_led_count_invalid: '灯珠数量必须在 1 到 128 之间',
+        error_effect_params_incomplete: '灯效参数不完整',
+        error_effect_unknown: '未知的灯效',
+        error_preview_glucose_invalid: '模拟血糖必须在 20 到 600 mg/dL 之间',
+        error_effect_speed_invalid: '速度必须在 1 到 100 之间',
+        error_validation_expired: '配置已经变化，请重新验证',
+        error_save_failed: '保存配置失败',
+        error_wifi_invalid: 'Wi-Fi 参数无效',
+        error_wifi_start_failed: '无法开始连接 Wi-Fi',
+        error_wifi_password_wrong: 'Wi-Fi 密码错误',
+        error_wifi_not_found: '找不到这个 Wi-Fi',
+        error_wifi_timeout: '连接 Wi-Fi 超时',
+        error_nightscout_request_create_failed: '无法创建 HTTPS 请求',
+        error_nightscout_connect_failed: 'Nightscout 连接失败，请检查域名和 HTTPS 证书',
+        error_nightscout_network_failed: 'Nightscout 请求超时或网络异常',
+        error_nightscout_anonymous_denied: '这个 Nightscout 不允许匿名读取（HTTP 401/403）',
+        error_nightscout_api_not_found: '地址可以访问，但没有找到 Nightscout API',
+        error_nightscout_http: 'Nightscout 返回 HTTP {status}',
+        error_nightscout_address_too_long: 'Nightscout 地址太长',
+        error_nightscout_status_time_missing: 'Nightscout 状态接口没有返回 serverTimeEpoch',
+        error_nightscout_server_time_invalid: 'Nightscout 返回的服务器时间无效',
+        error_nightscout_address_required: '请输入 Nightscout 地址',
+        error_nightscout_https_only: '当前版本只支持 HTTPS 地址',
+        error_nightscout_address_parts_invalid: '地址中不能包含参数、锚点或账号信息',
+        error_nightscout_address_invalid: 'Nightscout 地址格式不正确',
+        error_nightscout_host_required: 'Nightscout 域名不能为空',
+        error_nightscout_request_failed: 'Nightscout 请求失败',
+        error_nightscout_response_too_large: 'Nightscout 返回的数据过大',
+        error_nightscout_data_invalid: '返回内容不是有效的 Nightscout 数据',
+        error_nightscout_no_data: 'Nightscout 暂时没有血糖数据',
+        error_nightscout_fields_missing: '血糖数据缺少有效的 sgv 或 date 字段',
+        error_nightscout_data_time_invalid: 'Nightscout 数据时间无效',
+        error_nightscout_record_in_future: '血糖记录时间晚于 Nightscout 服务器时间',
+        error_request_failed: '请求失败'
+      },
+      en: {
+        pageTitle: 'Suger RGB',
+        languageButton: '中文',
+        languageButtonLabel: 'Switch to Chinese',
+        lead: 'Enter the details below. Saving is enabled only after the device connects to Wi-Fi and reads a real glucose value from Nightscout.',
+        ssidLabel: 'Wi-Fi name',
+        passwordLabel: 'Wi-Fi password',
+        passwordOpen: 'Leave blank for an open network.',
+        passwordSaved: 'Leave blank to keep the saved password.',
+        nightscoutLabel: 'Nightscout address',
+        nightscoutHintPrefix: 'Enter',
+        nightscoutHintSuffix: '.',
+        nightscoutInfoLabel: 'About the Nightscout address',
+        nightscoutAuto: 'HTTPS and the Nightscout API path are added automatically. Anonymous-access sites only.',
+        nightscoutDeployPrefix: 'New to Nightscout or need help deploying it? Use',
+        nightscoutDeploySuffix: 'for free one-click deployment.',
+        ledCountLabel: 'Number of LEDs (1–128)',
+        colorGuideTitle: 'Glucose colors',
+        colorGuideInfoLabel: 'About glucose colors',
+        colorPurple: 'Purple',
+        colorBlue: 'Blue',
+        colorGreen: 'Green',
+        colorOrange: 'Orange',
+        colorRed: 'Red',
+        trendTitle: 'Dynamic trend alerts',
+        trendInfoLabel: 'About dynamic trend alerts',
+        trendDescription: 'Uses Nightscout trend arrows to select effects; on by default.',
+        criticalNotice: 'Emergency alerts at <3.3 mmol/L (<60 mg/dL) and ≥15 mmol/L (≥270 mg/dL) cannot be disabled.',
+        criticalLowLabel: 'Preview below 3.3 mmol/L',
+        criticalHighLabel: 'Preview 15 mmol/L or above',
+        singleUpLabel: 'Single up',
+        doubleUpLabel: 'Double up',
+        singleDownLabel: 'Single down',
+        doubleDownLabel: 'Double down',
+        or: 'or',
+        validate: 'Validate connection',
+        validating: 'Validating…',
+        save: 'Save & restart',
+        bootHint: 'During normal operation, hold BOOT until the LEDs change to a white chase to return to this page.',
+        projectLink: 'Suger RGB open source · GitHub',
+        disclaimerTitle: 'IMPORTANT',
+        disclaimerText: 'Suger RGB is an open-source, community-based DIY project. It is not supported by any company and is not officially approved or regulated for diabetes therapy. You are responsible for building and running the device and use it at your own risk.',
+        connecting: 'Connecting to Wi-Fi and reading Nightscout. This usually takes a few seconds.',
+        configLoadFailed: 'Could not load the current settings: {error}',
+        restoreAutoFailed: 'Could not restore automatic display: {error}',
+        effectStatusFailed: 'Could not read the current light status: {error}',
+        effectPreviewFailed: 'Could not preview the light effect: {error}',
+        justNow: 'just now',
+        minutesAgo: '{minutes} min ago',
+        latestRecord: 'latest record received',
+        validationSuccess: 'Nightscout connected\n{mmol} mmol/L ({sgv} mg/dL)\nLatest data: {age}\nTrend: {direction}',
+        staleWarning: 'The latest data is over 10 minutes old. The lamp will show a white breathing effect after saving.',
+        saveSuccess: 'Settings saved. The device is restarting and will reconnect to your Wi-Fi.',
+        directionDoubleUp: 'Rising fast ⇈',
+        directionSingleUp: 'Rising ↑',
+        directionFortyFiveUp: 'Rising slowly ↗',
+        directionFlat: 'Steady →',
+        directionFortyFiveDown: 'Falling slowly ↘',
+        directionSingleDown: 'Falling ↓',
+        directionDoubleDown: 'Falling fast ⇊',
+        directionUnknown: 'Unknown',
+        error_invalid_request: 'Invalid request.',
+        error_incomplete_config: 'Please complete the required setup fields.',
+        error_ssid_invalid: 'The Wi-Fi name is empty or longer than 32 bytes.',
+        error_wifi_password_too_long: 'The Wi-Fi password is too long.',
+        error_led_count_invalid: 'The number of LEDs must be between 1 and 128.',
+        error_effect_params_incomplete: 'The effect settings are incomplete.',
+        error_effect_unknown: 'Unknown light effect.',
+        error_preview_glucose_invalid: 'Preview glucose must be between 20 and 600 mg/dL.',
+        error_effect_speed_invalid: 'Effect speed must be between 1 and 100.',
+        error_validation_expired: 'The settings changed. Please validate again.',
+        error_save_failed: 'Could not save the settings.',
+        error_wifi_invalid: 'The Wi-Fi settings are invalid.',
+        error_wifi_start_failed: 'Could not start the Wi-Fi connection.',
+        error_wifi_password_wrong: 'Incorrect Wi-Fi password.',
+        error_wifi_not_found: 'This Wi-Fi network could not be found.',
+        error_wifi_timeout: 'The Wi-Fi connection timed out.',
+        error_nightscout_request_create_failed: 'Could not create the HTTPS request.',
+        error_nightscout_connect_failed: 'Could not connect to Nightscout. Check the domain and HTTPS certificate.',
+        error_nightscout_network_failed: 'The Nightscout request timed out or the network failed.',
+        error_nightscout_anonymous_denied: 'This Nightscout site does not allow anonymous access (HTTP 401/403).',
+        error_nightscout_api_not_found: 'The address is reachable, but the Nightscout API was not found.',
+        error_nightscout_http: 'Nightscout returned HTTP {status}.',
+        error_nightscout_address_too_long: 'The Nightscout address is too long.',
+        error_nightscout_status_time_missing: 'The Nightscout status API did not return serverTimeEpoch.',
+        error_nightscout_server_time_invalid: 'Nightscout returned an invalid server time.',
+        error_nightscout_address_required: 'Enter a Nightscout address.',
+        error_nightscout_https_only: 'This version supports HTTPS addresses only.',
+        error_nightscout_address_parts_invalid: 'The address cannot contain parameters, fragments, or account information.',
+        error_nightscout_address_invalid: 'The Nightscout address format is invalid.',
+        error_nightscout_host_required: 'The Nightscout domain cannot be empty.',
+        error_nightscout_request_failed: 'The Nightscout request failed.',
+        error_nightscout_response_too_large: 'The Nightscout response is too large.',
+        error_nightscout_data_invalid: 'The response is not valid Nightscout data.',
+        error_nightscout_no_data: 'Nightscout does not currently have glucose data.',
+        error_nightscout_fields_missing: 'The glucose record is missing a valid sgv or date field.',
+        error_nightscout_data_time_invalid: 'The Nightscout glucose timestamp is invalid.',
+        error_nightscout_record_in_future: 'The glucose record is later than the Nightscout server time.',
+        error_request_failed: 'Request failed.'
+      }
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const form = $('form');
+    const validateButton = $('validate');
+    const saveButton = $('save');
+    const result = $('result');
+    const demoError = $('demoError');
+    const languageToggle = $('languageToggle');
+    const ledCountInput = $('ledCount');
+    const ledCountMin = Number(ledCountInput.min);
+    const ledCountMax = Number(ledCountInput.max);
+    const languageStorageKey = 'sugerRgbLanguage';
+    const savedLanguage = (() => {
+      try {
+        return localStorage.getItem(languageStorageKey);
+      } catch (_) {
+        return null;
+      }
+    })();
+    const browserLanguage = (navigator.languages && navigator.languages[0]) || navigator.language || '';
+    let currentLanguage = savedLanguage === 'zh' || savedLanguage === 'en'
+      ? savedLanguage
+      : (browserLanguage.toLowerCase().startsWith('zh') ? 'zh' : 'en');
+    let validationNonce = '';
+    let demoGlucose = 100;
+    let demoPreviewActive = false;
+    let configured = false;
+    let validating = false;
+    let resultState = null;
+    let demoErrorState = null;
+
+    document.querySelectorAll('.info-button').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const panel = $(button.getAttribute('aria-controls'));
+        const expanded = button.getAttribute('aria-expanded') === 'true';
+        button.setAttribute('aria-expanded', String(!expanded));
+        panel.hidden = expanded;
+        if (panel.id === 'trendInfo' && expanded) await stopDemo();
+      });
+    });
+
+    function t(key, params = {}) {
+      const dictionary = translations[currentLanguage];
+      const fallback = translations.zh;
+      const template = Object.prototype.hasOwnProperty.call(dictionary, key)
+        ? dictionary[key]
+        : (fallback[key] || key);
+      return template.replace(/\{(\w+)\}/g, (_, name) => String(params[name] ?? ''));
+    }
+
+    function directionText(direction) {
+      const keys = {
+        DoubleUp: 'directionDoubleUp',
+        SingleUp: 'directionSingleUp',
+        FortyFiveUp: 'directionFortyFiveUp',
+        Flat: 'directionFlat',
+        FortyFiveDown: 'directionFortyFiveDown',
+        SingleDown: 'directionSingleDown',
+        DoubleDown: 'directionDoubleDown'
+      };
+      return t(keys[direction] || 'directionUnknown');
+    }
+
+    function errorDetails(error) {
+      return {
+        code: error && error.apiCode ? error.apiCode : 'request_failed',
+        status: error && error.apiStatus ? error.apiStatus : '?',
+        message: error && error.message ? error.message : ''
+      };
+    }
+
+    function localizedError(details) {
+      const key = 'error_' + (details.code || 'request_failed');
+      if (Object.prototype.hasOwnProperty.call(translations[currentLanguage], key)) {
+        return t(key, {status: details.status || '?'});
+      }
+      return currentLanguage === 'zh' && details.message
+        ? details.message
+        : t('error_request_failed');
+    }
+
+    function renderResult() {
+      if (!resultState) {
+        result.className = '';
+        result.textContent = '';
+        return;
+      }
+
+      result.className = resultState.kind;
+      if (resultState.type === 'validation') {
+        const data = resultState.data;
+        const age = data.ageKnown
+          ? (data.ageMinutes === 0 ? t('justNow') : t('minutesAgo', {minutes: data.ageMinutes}))
+          : t('latestRecord');
+        let message = t('validationSuccess', {
+          mmol: (data.sgv / 18).toFixed(1),
+          sgv: data.sgv,
+          age,
+          direction: directionText(data.direction)
+        });
+        if (data.stale) message += '\n\n' + t('staleWarning');
+        result.textContent = message;
+        return;
+      }
+      if (resultState.type === 'error') {
+        const message = localizedError(resultState.error);
+        result.textContent = resultState.prefixKey
+          ? t(resultState.prefixKey, {error: message})
+          : message;
+        return;
+      }
+      result.textContent = t(resultState.key, resultState.params);
+    }
+
+    function showResultMessage(kind, key, params = {}) {
+      resultState = {type: 'message', kind, key, params};
+      renderResult();
+    }
+
+    function showResultError(error, prefixKey = '') {
+      resultState = {type: 'error', kind: 'error', error: errorDetails(error), prefixKey};
+      renderResult();
+    }
+
+    function showValidationResult(data) {
+      resultState = {type: 'validation', kind: data.stale ? 'warn' : 'ok', data};
+      renderResult();
+    }
+
+    function renderDemoError() {
+      if (!demoErrorState) {
+        demoError.textContent = '';
+        demoError.classList.remove('visible');
+        return;
+      }
+      demoError.textContent = t(demoErrorState.prefixKey, {
+        error: localizedError(demoErrorState.error)
+      });
+      demoError.classList.add('visible');
+    }
+
+    function clearDemoError() {
+      demoErrorState = null;
+      renderDemoError();
+    }
+
+    function setDemoError(prefixKey, error) {
+      demoErrorState = {prefixKey, error: errorDetails(error)};
+      renderDemoError();
+    }
+
+    function updatePasswordHint() {
+      $('passwordHint').textContent = t(configured ? 'passwordSaved' : 'passwordOpen');
+    }
+
+    function applyLanguage() {
+      document.documentElement.lang = currentLanguage === 'zh' ? 'zh-CN' : 'en';
+      document.title = t('pageTitle');
+      document.querySelectorAll('[data-i18n]').forEach((element) => {
+        element.textContent = t(element.dataset.i18n);
+      });
+      document.querySelectorAll('[data-i18n-aria-label]').forEach((element) => {
+        element.setAttribute('aria-label', t(element.dataset.i18nAriaLabel));
+      });
+      languageToggle.textContent = t('languageButton');
+      languageToggle.setAttribute('aria-label', t('languageButtonLabel'));
+      validateButton.textContent = validating ? t('validating') : t('validate');
+      updatePasswordHint();
+      renderResult();
+      renderDemoError();
+    }
+
+    function setLanguage(language) {
+      currentLanguage = language;
+      try {
+        localStorage.setItem(languageStorageKey, language);
+      } catch (_) {
+        // Captive portal browsers may block local storage; the page still works.
+      }
+      applyLanguage();
+    }
+
+    function invalidate() {
+      validationNonce = '';
+      saveButton.disabled = true;
+    }
+
+    function limitLedCountInput() {
+      if (ledCountInput.value === '') return;
+      const value = Number(ledCountInput.value);
+      if (!Number.isFinite(value)) {
+        ledCountInput.value = '';
+        return;
+      }
+      ledCountInput.value = String(Math.min(ledCountMax,
+        Math.max(ledCountMin, Math.trunc(value))));
+    }
+
+    async function api(path, body) {
+      const response = await fetch(path, {
+        method: body ? 'POST' : 'GET',
+        headers: body ? {'Content-Type': 'application/json'} : {},
+        body: body ? JSON.stringify(body) : undefined,
+        cache: 'no-store'
+      });
+      let data;
+      try {
+        data = await response.json();
+      } catch (_) {
+        const error = new Error('Invalid JSON response');
+        error.apiCode = 'request_failed';
+        throw error;
+      }
+      if (!response.ok || data.ok === false) {
+        const error = new Error(data.error || 'Request failed');
+        error.apiCode = data.errorCode || 'request_failed';
+        error.apiStatus = data.status;
+        throw error;
+      }
+      return data;
+    }
+
+    async function loadConfig() {
+      try {
+        const data = await api('/api/config');
+        $('ssid').value = data.ssid || '';
+        $('nightscout').value = data.nightscout || '';
+        $('ledCount').value = data.ledCount || 30;
+        $('dynamicTrend').checked = data.dynamicTrend !== false;
+        configured = data.configured === true;
+        updatePasswordHint();
+      } catch (error) {
+        showResultError(error, 'configLoadFailed');
+      }
+    }
+
+    function glucoseColor(glucose) {
+      if (glucose < 63) return '#9600DC';
+      if (glucose < 80) return '#0023FF';
+      if (glucose < 153) return '#00FF00';
+      if (glucose < 180) return '#FF4B00';
+      return '#FF0000';
+    }
+
+    function clearDemoSelection() {
+      document.querySelectorAll('.demo-choice').forEach((button) => {
+        button.classList.remove('active');
+      });
+    }
+
+    function setDemoColor(status) {
+      const liveGlucose = Number(status.liveGlucose);
+      demoGlucose = status.hasLiveGlucose && liveGlucose >= 60 && liveGlucose < 270
+        ? liveGlucose
+        : 100;
+      const color = glucoseColor(demoGlucose);
+      document.querySelectorAll('.demo-arrow').forEach((button) => {
+        button.style.setProperty('--trend-color', color);
+      });
+    }
+
+    async function stopDemo() {
+      clearDemoSelection();
+      clearDemoError();
+      demoPreviewActive = false;
+      try {
+        await api('/api/effects', {active: false});
+      } catch (error) {
+        setDemoError('restoreAutoFailed', error);
+      }
+    }
+
+    async function initializeDemo() {
+      try {
+        const status = await api('/api/effects');
+        setDemoColor(status);
+        if (status.active) await api('/api/effects', {active: false});
+      } catch (error) {
+        setDemoError('effectStatusFailed', error);
+      }
+
+      if (location.hash === '#trendInfo' || location.hash === '#trendDemo') {
+        const infoButton = document.querySelector('[aria-controls="trendInfo"]');
+        infoButton.setAttribute('aria-expanded', 'true');
+        $('trendInfo').hidden = false;
+      }
+    }
+
+    document.querySelectorAll('.demo-choice').forEach((button) => {
+      button.addEventListener('click', async () => {
+        clearDemoError();
+        try {
+          const status = await api('/api/effects', {
+            active: true,
+            effect: Number(button.dataset.effect),
+            glucose: button.dataset.glucose ? Number(button.dataset.glucose) : demoGlucose,
+            speed: Number(button.dataset.speed),
+            reverse: button.dataset.reverse === 'true'
+          });
+          setDemoColor(status);
+          demoPreviewActive = true;
+          clearDemoSelection();
+          button.classList.add('active');
+        } catch (error) {
+          setDemoError('effectPreviewFailed', error);
+        }
+      });
+    });
+
+    window.addEventListener('pagehide', () => {
+      if (!demoPreviewActive || typeof navigator.sendBeacon !== 'function') return;
+      const payload = new Blob([JSON.stringify({active: false})], {
+        type: 'application/json'
+      });
+      navigator.sendBeacon('/api/effects', payload);
+    });
+
+    ledCountInput.addEventListener('beforeinput', (event) => {
+      if (event.data && /\D/.test(event.data)) event.preventDefault();
+    });
+    ledCountInput.addEventListener('input', limitLedCountInput);
+    form.addEventListener('input', invalidate);
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      invalidate();
+      const ssid = $('ssid').value.trim();
+      const nightscout = $('nightscout').value.trim();
+      const ledCount = Number($('ledCount').value);
+      if (!ssid || !nightscout) {
+        showResultMessage('error', 'error_incomplete_config');
+        return;
+      }
+      if (!Number.isInteger(ledCount) ||
+          ledCount < ledCountMin || ledCount > ledCountMax) {
+        showResultMessage('error', 'error_led_count_invalid');
+        return;
+      }
+
+      validating = true;
+      validateButton.disabled = true;
+      validateButton.textContent = t('validating');
+      showResultMessage('warn', 'connecting');
+      try {
+        const data = await api('/api/validate', {
+          ssid,
+          password: $('password').value,
+          nightscout,
+          ledCount,
+          dynamicTrend: $('dynamicTrend').checked
+        });
+        validationNonce = data.nonce;
+        $('nightscout').value = data.baseUrl;
+        showValidationResult(data);
+        saveButton.disabled = false;
+      } catch (error) {
+        showResultError(error);
+      } finally {
+        validating = false;
+        validateButton.disabled = false;
+        validateButton.textContent = t('validate');
+      }
+    });
+
+    saveButton.addEventListener('click', async () => {
+      if (!validationNonce) return;
+      saveButton.disabled = true;
+      validateButton.disabled = true;
+      try {
+        await api('/api/save', {nonce: validationNonce});
+        showResultMessage('ok', 'saveSuccess');
+      } catch (error) {
+        showResultError(error);
+        validateButton.disabled = false;
+      }
+    });
+
+    languageToggle.addEventListener('click', () => {
+      setLanguage(currentLanguage === 'zh' ? 'en' : 'zh');
+    });
+
+    applyLanguage();
+    loadConfig();
+    initializeDemo();
+  </script>
+</body>
+</html>
