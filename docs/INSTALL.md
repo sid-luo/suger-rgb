@@ -7,7 +7,7 @@
 >
 > 本项目实测曾遇到上述问题，换用 **ESP32-C3 Pro Mini** 后恢复正常。**请直接选用 ESP32-C3 Pro Mini。**
 
-[English](INSTALL.en.md) · [返回项目首页](../README.md)
+[English](INSTALL.en.md) · [返回项目首页](../README.zh-CN.md)
 
 推荐使用网页安装器。它会检查芯片型号，并把 bootloader、分区表和应用程序作为一个完整固件写入 ESP32-C3；不需要安装 ESP-IDF 或使用命令行。
 

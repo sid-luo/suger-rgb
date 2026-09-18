@@ -1,6 +1,6 @@
 # Suger RGB User Guide
 
-[简体中文](GUIDE.md) · [Project home](../README.en.md) · [Web installer](https://rgb.sidluo.com/installer/)
+[简体中文](GUIDE.md) · [Project home](../README.md) · [Web installer](https://rgb.sidluo.com/installer/)
 
 For your first build, follow this order: **gather the parts → connect the wires → flash from a computer → set up from a phone → place the device where you want to use it.** You do not need a development environment or any code changes.
 
@@ -318,4 +318,4 @@ Just after startup, the device may not have read its first record yet. If white 
 
 ---
 
-[Back to project home](../README.en.md) · [Web installer](https://rgb.sidluo.com/installer/) · [Installation and flashing troubleshooting](INSTALL.en.md)
+[Back to project home](../README.md) · [Web installer](https://rgb.sidluo.com/installer/) · [Installation and flashing troubleshooting](INSTALL.en.md)

@@ -4,80 +4,85 @@
 
 <h1 align="center">Suger RGB</h1>
 
-## ⚠️ 不要使用 ESP32-C3 Super Mini，请使用 ESP32-C3 Pro Mini
+## ⚠️ DO NOT USE ESP32-C3 SUPER MINI — USE ESP32-C3 PRO MINI
 
 > [!WARNING]
-> **请勿购买或使用 ESP32-C3 Super Mini（SuperMini）制作本项目。** 这类板子可能出现 Wi-Fi 不稳定、搜不到配网热点或配网失败等问题，即使固件刷写成功也可能无法正常联网。
+> **Do not buy or use an ESP32-C3 Super Mini (SuperMini) for this project.** These boards may have unreliable Wi-Fi, an undiscoverable setup hotspot, or failed Wi-Fi setup. A successful firmware flash does not guarantee working Wi-Fi.
 >
-> 本项目实测曾遇到上述问题，换用 **ESP32-C3 Pro Mini** 后恢复正常。**请直接选用 ESP32-C3 Pro Mini。**
+> These issues occurred during this project's testing and were resolved by switching to an **ESP32-C3 Pro Mini**. **Choose the ESP32-C3 Pro Mini for this project.**
 
-<p align="center">把 Nightscout 血糖和走势，变成一眼就能看懂的灯光。</p>
+<p align="center">Turn Nightscout glucose and trend data into light you can understand at a glance.</p>
+
+> [!TIP]
+> ### ☁️ No Nightscout yet? Start in the cloud. Bring it to light.
+>
+> Try my other open-source project, [Nightscout for Cloudflare](https://github.com/sid-luo/nightscout-for-cloudflare): powered by Cloudflare, **ready to deploy in minutes**, and **completely free (no credit card required)**. **All your data stays under your control**, with no need to buy a server or configure MongoDB. Once it is set up, connect Suger RGB to bring your glucose levels and trends into the light around you.
+>
+> **[Explore the project →](https://github.com/sid-luo/nightscout-for-cloudflare)** · **[Deploy in your browser →](https://nscf.sidluo.com)**
 
 <p align="center">
-  <strong>简体中文</strong> · <a href="README.en.md">English</a>
+  <strong>English</strong> · <a href="README.zh-CN.md">简体中文</a>
 </p>
 
 <p align="center">
-  <a href="https://rgb.sidluo.com/installer/"><strong>网页安装</strong></a>
-  · <a href="https://rgb.sidluo.com/demo/"><strong>灯效演示</strong></a>
-  · <a href="docs/GUIDE.md"><strong>完整教程</strong></a>
+  <a href="https://rgb.sidluo.com/installer/"><strong>Web installer</strong></a>
+  · <a href="https://rgb.sidluo.com/demo/"><strong>Effect demo</strong></a>
+  · <a href="docs/GUIDE.en.md"><strong>Full guide</strong></a>
 </p>
 
-Suger RGB 是一个使用 ESP32-C3 Pro Mini、WS2812B 和 Nightscout 制作的开源血糖提示灯。设备每分钟读取一次最新血糖，用颜色表示区间，并根据血糖走势改变灯效。
+Suger RGB is an open-source glucose indicator built with an ESP32-C3 Pro Mini, WS2812B LEDs, and Nightscout. It reads the latest glucose value once per minute, uses color for the glucose range, and changes the light effect with the glucose trend.
 
-PS：如果你没有使用 Nightscout（~~就算正在使用也可以看一下~~），我另外一个开源项目 [Nightscout for Cloudflare](https://github.com/sid-luo/nightscout-for-cloudflare#rgb)：完全免费部署在自己 Cloudflare 账户上的 Nightscout。完全免费，几分钟就能部署好。
+This project aims to provide a low-cost way to help observe glucose trends. Search for `esp32-c3-mini-pro` and `ws2812b` on AliExpress, and you'll find plenty of affordable options. My skills are limited, and I don't currently have a 3D-printable model of my own. I only have one downloaded from [here](https://makerworld.com/zh/models/2008412-case-for-esp32-c3-pro-mini-esp32-c3fh4#profileId-2163305), which just about works for an LED strip. I'd appreciate support from more experienced makers.
 
-本项目旨在用低成本的方案辅助观察血糖走势。在淘宝搜索 `esp32-c3-mini-pro` 和 `ws2812b`，就有很多选择，而且价格实惠。小弟能力有限，目前没有 3D 打印模型，只有一个在[这里](https://makerworld.com/zh/models/2008412-case-for-esp32-c3-pro-mini-esp32-c3fh4#profileId-2163305)下载的，做灯带的话勉强能用。希望大佬们多多支持。
+When using a CGM, I often receive an alert only after my glucose has already gone high or low. After years of managing my glucose, I believe that seeing glucose trends “passively” is a very important part of the process. By the time I receive an alert from the CGM app, it may already be too late. Noticing changes in the light out of the corner of my eye can help me intervene earlier and try to avoid high or low glucose.
 
-在使用 CGM 的时候，经常是发生高血糖或低血糖才收到提示。在多年控糖经历中，“被动”看到血糖走势，我认为是非常重要的一环。接收到 CGM 软件提示的时候，可能已经就迟了。无意中余光看到灯光的变化，可以尽早干预，争取避免高／低血糖。
+![LED strip scenes: computer desk, living room, and kitchen](docs/assets/scenarios/led-strip-scenes.en.png)
 
-![灯带方案：电脑桌、客厅和厨房应用场景](docs/assets/scenarios/led-strip-scenes.zh.png)
-
-![灯板／灯环与 3D 打印外壳应用构想](docs/assets/scenarios/led-matrix-ring-scenes.zh.png)
+![LED matrix / ring and 3D-printed enclosure concepts](docs/assets/scenarios/led-matrix-ring-scenes.en.png)
 
 > [!IMPORTANT]
-> Suger RGB 是一个开源社区 DIY 项目，不由任何公司提供正式支持，也未获批准或受监管用于糖尿病治疗。用户须自行负责设备的搭建与运行，并自行承担使用风险。
+> Suger RGB is an open-source, community-based DIY project. It is not supported by any company and is not officially approved or regulated for diabetes therapy. You are responsible for building and running the device and use it at your own risk.
 
-## 功能简介
+## What it shows
 
-| mmol/L | mg/dL | 颜色 |
+| mmol/L | mg/dL | Color |
 | ---: | ---: | --- |
-| `<3.5` | `<63` | 紫色 |
-| `3.5–<4.4` | `63–79` | 蓝色 |
-| `4.4–<8.5` | `80–152` | 绿色 |
-| `8.5–<10` | `153–179` | 橙色 |
-| `≥10` | `≥180` | 红色 |
+| `<3.5` | `<63` | Purple |
+| `3.5–<4.4` | `63–79` | Blue |
+| `4.4–<8.5` | `80–152` | Green |
+| `8.5–<10` | `153–179` | Orange |
+| `≥10` | `≥180` | Red |
 
-灯效会根据 Nightscout 的血糖走势动态改变。可以先打开[灯效演示](https://rgb.sidluo.com/demo/)，直接查看不同血糖和箭头的显示效果。
+The light effect changes with the Nightscout glucose trend. Open the [effect demo](https://rgb.sidluo.com/demo/) to see each glucose and arrow combination directly.
 
-- 10 分钟没有有效新数据时显示白色呼吸灯
-- 手机配网页支持中文、英文和实体灯效预览
-- 支持 1–128 颗 WS2812B 灯珠，可使用灯带、灯环或灯板
+- A white breathing light appears when no valid new reading has arrived for 10 minutes
+- The phone setup page supports Chinese, English, and live effect preview on the LEDs
+- Works with 1–128 WS2812B pixels in a strip, ring, or panel
 
-## 需要准备
+## What you need
 
-### ⚠️ 再次提醒：不要购买 ESP32-C3 Super Mini
+### ⚠️ REMINDER: DO NOT BUY ESP32-C3 SUPER MINI
 
-**请购买 ESP32-C3 Pro Mini。Super Mini 可能存在 Wi-Fi 问题，请勿将其用于本项目。**
+**Buy an ESP32-C3 Pro Mini. Super Mini boards may have Wi-Fi problems; do not use them for this project.**
 
-| 部件 | 要求 |
+| Part | Requirement |
 | --- | --- |
-| 主控 | ESP32-C3 Pro Mini |
-| 灯 | WS2812B 灯带、灯环或灯板，1–128 颗 |
-| USB | 支持数据传输的 USB 线和 5V 2A 电源 |
-| 网络 | 2.4 GHz Wi-Fi，以及可匿名读取的 Nightscout |
+| Controller | ESP32-C3 Pro Mini |
+| LEDs | WS2812B strip, ring, or panel with 1–128 pixels |
+| USB | A USB data cable and 5 V / 2 A power source |
+| Network | 2.4 GHz Wi-Fi and an anonymously readable Nightscout site |
 
 ![ESP32-C3 Pro Mini — front and back](docs/assets/hardware/esp32-c3-pro-mini-front-back.png)
 
-主板原图：左侧为正面，右侧为背面。
+Original board photo: front on the left, back on the right.
 
-**主板保护壳（可选）**：[原版 STL（盒体＋盖子）](docs/models/esp32-c3-pro-mini/Case_ESP32-C3_PRO_MINI_V01.stl) · [单独盒体](docs/models/esp32-c3-pro-mini/Case_ESP32-C3_PRO_MINI_V01_Body.stl) · [单独盖子](docs/models/esp32-c3-pro-mini/Case_ESP32-C3_PRO_MINI_V01_Lid.stl)。打印平台不接受组合文件时，分别上传盒体和盖子。作者、来源与许可见[模型说明](docs/models/esp32-c3-pro-mini/README.md)。
+**Optional board enclosure**: [Original STL (body + lid)](docs/models/esp32-c3-pro-mini/Case_ESP32-C3_PRO_MINI_V01.stl) · [Body only](docs/models/esp32-c3-pro-mini/Case_ESP32-C3_PRO_MINI_V01_Body.stl) · [Lid only](docs/models/esp32-c3-pro-mini/Case_ESP32-C3_PRO_MINI_V01_Lid.stl). If your printing service does not accept the combined file, upload the body and lid separately. See the [model notes](docs/models/esp32-c3-pro-mini/README.en.md) for the designer, source, and license.
 
-## 接线
+## Wiring
 
-![ESP32-C3 Pro Mini 与 WS2812B 灯带接线图](docs/assets/hardware/pro-mini-ws2812b-wiring.png)
+![ESP32-C3 Pro Mini GPIO4 to WS2812B DIN wiring](docs/assets/hardware/pro-mini-ws2812b-wiring.en.png)
 
-接线图采用**主板背面视角，USB 接口朝上**。连接 **5V → 5V、GND → GND、GPIO4 → DIN**。灯带焊盘顺序可能不同，请以实物丝印为准。
+The wiring diagram shows the **back of the board with USB at the top**. Connect **5V → 5V, GND → GND, GPIO4 → DIN**. Follow the labels on your actual strip; pad order can vary.
 
 ```text
 ESP32-C3 Pro Mini          WS2812B
@@ -87,33 +92,33 @@ GND   -------------------- GND
 GPIO4 -------------------> DIN
 ```
 
-灯的数据线应连接 `DIN`，不要连接 `DOUT`。
+Connect the data wire to `DIN`, not `DOUT`.
 
-![主板接线近照](docs/assets/hardware/photos/pro-mini-wiring-closeup.svg)
+![Board wiring close-up](docs/assets/hardware/photos/pro-mini-wiring-closeup.svg)
 
-## 开始使用
+## Get started
 
-1. 按上图接好三条线，并用 USB 连接 ESP32-C3 Pro Mini。
-2. 用桌面版 Chrome 或 Edge 打开[网页安装器](https://rgb.sidluo.com/installer/)并写入固件。
-3. 手机连接无密码热点 `Suger-RGB-XXXX`。
-4. 填写家庭 Wi-Fi、Nightscout 地址和灯珠数量，然后验证并保存。
-5. 设备重启后会自动读取 Nightscout 并显示灯光。
+1. Connect the three wires above, then connect the ESP32-C3 Pro Mini over USB.
+2. Open the [web installer](https://rgb.sidluo.com/installer/) in desktop Chrome or Edge and install the firmware.
+3. Join the open `Suger-RGB-XXXX` Wi-Fi network on your phone.
+4. Enter home Wi-Fi, the Nightscout address, and the LED count, then validate and save.
+5. After restarting, the device reads Nightscout and displays the light automatically.
 
-**手机配网页**
+**Phone setup page**
 
-<img src="docs/assets/tutorial/phone/02-setup-form.zh.png" alt="手机上的中文配网页" width="420">
+<img src="docs/assets/tutorial/phone/02-setup-form.en.png" alt="English setup page on a phone" width="420">
 
-以后需要修改设置时，长按开发板上的 BOOT 约 5 秒即可重新进入配网。完整步骤和故障排查见[详细使用教程](docs/GUIDE.md)。
+To change the setup later, hold the board's BOOT button for about five seconds. See the [full user guide](docs/GUIDE.en.md) for every step and troubleshooting.
 
-## 文档
+## Documentation
 
-- [详细使用教程](docs/GUIDE.md)
-- [灯效在线演示](https://rgb.sidluo.com/demo/)
+- [Full user guide](docs/GUIDE.en.md)
+- [Interactive effect demo](https://rgb.sidluo.com/demo/)
 
-## License 与致谢
+## License and credits
 
-Suger RGB 按 [GNU GPL v3.0 或更高版本](LICENSE)发布。部分灯效改编自 MIT 许可的 [WLED v0.14.4](https://github.com/wled/WLED/tree/v0.14.4)，完整来源与版权说明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+Suger RGB is released under the [GNU GPL v3.0 or later](LICENSE). Some effects are adapted from MIT-licensed [WLED v0.14.4](https://github.com/wled/WLED/tree/v0.14.4). See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for complete source and copyright notices.
 
-主板保护壳模型由 Mattia Carli 制作，原版及拆分文件单独遵循 [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) 许可。
+The board enclosure model is by Mattia Carli. The original and split STL files are separately licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 
-感谢 [Nightscout](https://nightscout.github.io/) 社区、WLED 项目及所有开源贡献者。
+Thanks to the [Nightscout](https://nightscout.github.io/) community, the WLED project, and every open-source contributor.

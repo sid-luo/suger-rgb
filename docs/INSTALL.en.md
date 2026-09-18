@@ -7,7 +7,7 @@
 >
 > These issues occurred during this project's testing and were resolved by switching to an **ESP32-C3 Pro Mini**. **Choose the ESP32-C3 Pro Mini for this project.**
 
-[简体中文](INSTALL.md) · [Back to project home](../README.en.md)
+[简体中文](INSTALL.md) · [Back to project home](../README.md)
 
 The browser installer is recommended. It verifies the chip and writes the bootloader, partition table, and application as one complete ESP32-C3 image. ESP-IDF and command-line tools are not required.
 

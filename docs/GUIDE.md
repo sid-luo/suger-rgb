@@ -1,6 +1,6 @@
 # Suger RGB 详细使用教程
 
-[English](GUIDE.en.md) · [项目首页](../README.md) · [网页安装器](https://rgb.sidluo.com/installer/)
+[English](GUIDE.en.md) · [项目首页](../README.zh-CN.md) · [网页安装器](https://rgb.sidluo.com/installer/)
 
 第一次制作，可以按下面的顺序完成：**准备材料 → 接线 → 用电脑刷写 → 用手机配网 → 放到日常使用的位置。** 不需要安装开发环境，也不需要修改代码。
 
@@ -312,4 +312,4 @@ Nightscout 地址不需要手动添加 API 路径，设备会自动处理。当�
 
 ---
 
-[返回项目首页](../README.md) · [网页安装器](https://rgb.sidluo.com/installer/) · [安装与刷写排查](INSTALL.md)
+[返回项目首页](../README.zh-CN.md) · [网页安装器](https://rgb.sidluo.com/installer/) · [安装与刷写排查](INSTALL.md)
